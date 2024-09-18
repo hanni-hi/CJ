@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/1.Scene/Demo Scene V1(Blue).unity
+    guid: aa1037c4de98cc144b3b51074b7e3010
+  - enabled: 1
+    path: Assets/1.Scene/SciFi_Warehouse.unity
+    guid: 04ba57353b4f0284686265d3d150c23c
+  - enabled: 1
+    path: Assets/1.Scene/Example_01.unity
+    guid: 8f1a01e4b1a374aa6bfe472517a8a56e
+  m_configObjects: {}
