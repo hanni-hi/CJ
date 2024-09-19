@@ -36,11 +36,9 @@ public class MemoUIManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            Debug.Log("MemoUIManager instance가 초기화되었습니다.");
         }
         else
         {
-            Debug.LogError("MemoUIManager instance가 이미 존재합니다. 기존 오브젝트를 파괴합니다.");
             Destroy(gameObject);
             return;
         }
@@ -87,7 +85,6 @@ public class MemoUIManager : MonoBehaviour
             }
             if (titleText == null || contentText == null)
             {
-                Debug.LogError("TitleText 또는 ContentText가 null입니다. MemoUI 프리팹의 구조를 확인하세요.");
                 return;
             }
 

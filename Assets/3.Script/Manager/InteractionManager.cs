@@ -136,7 +136,6 @@ public class InteractionManager : MonoBehaviour
     {
         if(passwordInputField.text==correctPassword)
         {
-            Debug.Log("비밀번호가 맞습니다. 문을 열게용~");
             OpenDoor();
             passwordUI.SetActive(false);
 

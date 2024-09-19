@@ -109,6 +109,7 @@ public class Firebase_Database : MonoBehaviour
         {
             if (task.IsFaulted)
             {
+            Debug.LogError("Data load failed: "+task.Exception);
                 currentRetry++;
                 DataLoad();
             }
@@ -123,17 +124,32 @@ public class Firebase_Database : MonoBehaviour
                 foreach (DataSnapshot data in snapshot.Children)
                 {
                     IDictionary rankInfo = (IDictionary)data.Value;
-                    strRank[count] = rankInfo["email"].ToString() + "  |  "
-                                    +rankInfo["game"].ToString()+ "  |  "
+
+                    if (rankInfo.Contains("email") && rankInfo.Contains("game") && rankInfo.Contains("score"))
+                    {
+                        strRank[count] = rankInfo["email"].ToString() + "  |  "
+                                    + rankInfo["game"].ToString() + "  |  "
                                     + rankInfo["score"].ToString();
-                    count++;
+                        count++;
+                    }
+                    else
+                    {
+                        Debug.Log("랭킹 데이터가 이상해요~");
+                    }
                 }
 
-                // UI 업데이트를 메인 스레드에서 수행
-                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                if (UnityMainThreadDispatcher.instance != null)
                 {
-                    TextLoad();
-                });
+                    // UI 업데이트를 메인 스레드에서 수행
+                    UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                    {
+                        TextLoad();
+                    });
+                }
+                else
+                {
+                    Debug.LogError("UnityMainThreadDispatcher 가 없어요...");
+                }
             }
         });
     }
@@ -142,26 +158,41 @@ public class Firebase_Database : MonoBehaviour
     {
         Array.Sort(strRank, (x,y)=>
         {
-            string[] xParts = x.Split('|')[1].Split(':');
-            string[] yParts = y.Split('|')[1].Split(':');
+            try
+            {
+                string[] xParts = x.Split('|');
+                string[] yParts = y.Split('|');
 
-            int xMinutes = int.Parse(xParts[0]);
-            int xSeconds = int.Parse(xParts[1]);
+                if(xParts.Length<3||yParts.Length<3)
+                {
+                    Debug.LogError("랭킹데이터포멧이 이상하네요...");
+                    return 0;
+                }
 
-            int yMinutes = int.Parse(yParts[0]);
-            int ySeconds = int.Parse(yParts[1]);
+                string[] xTimeParts = xParts[2].Trim().Split(':');
+                string[] yTimeParts = yParts[2].Trim().Split(':');
 
-            //분과 초를 비교하여 정렬
-            int xTotalSeconds = xMinutes * 60 + xSeconds;
-            int yTotalSeconds = yMinutes * 60 + ySeconds;
+                int xMinutes = int.Parse(xTimeParts[0]);
+                int xSeconds = int.Parse(xTimeParts[1]);
 
-            return xTotalSeconds.CompareTo(yTotalSeconds);
+                int yMinutes = int.Parse(yTimeParts[0]);
+                int ySeconds = int.Parse(yTimeParts[1]);
 
+                //분과 초를 비교하여 정렬
+                int xTotalSeconds = xMinutes * 60 + xSeconds;
+                int yTotalSeconds = yMinutes * 60 + ySeconds;
+
+                return xTotalSeconds.CompareTo(yTotalSeconds);
+            }
+            catch(Exception e)
+            {
+                Debug.LogError("Error parsing rank data: " + e.Message);
+                return 0;
+            }
         }); //시간순 정렬
 
-        for(int i=0; i<Rank.Length;i++)
+        for(int i=0; i<Mathf.Min(Rank.Length,strRank.Length);i++)
         {
-            if (i>=strLen) return;
             Rank[i].text = strRank[i];
         }
     }

@@ -37,7 +37,6 @@ public class FangBaby : MonoBehaviour
 
     public void OnPlayerDetected()
     {
-            Debug.Log("baby ÆÝÄ¡!");
             agent.isStopped = true;
             ani.SetBool("Attack",true);
     }

@@ -27,6 +27,7 @@ public class FirebaseAuthManager : MonoBehaviour
     public GameObject loginUIPanel;
 
    private bool isFirebaseInitialized = false;
+   private bool isLoggedIn = false;
 
     void Awake()
     {
@@ -52,8 +53,12 @@ public class FirebaseAuthManager : MonoBehaviour
                 //  // Firebase 초기화 완료 표시
                 isFirebaseInitialized = true;
 
-                // Firebase가 초기화된 후 현재 사용자 체크
-                CheckCurrentUser();
+                // Firebase가 초기화된 후 현재 사용자 체크는 메인 스레드에서 실행되어야 함
+                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                {
+                    // Firebase가 초기화된 후 현재 사용자 체크
+                    CheckCurrentUser();
+                });
             }
             else
             {
@@ -87,11 +92,21 @@ public class FirebaseAuthManager : MonoBehaviour
         {
             CheckCurrentUser();
         }
+        else
+        {
+            Debug.Log("Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
+        }
     }
 
     public void CheckCurrentUser()
     {
-        if(auth==null)
+        if (!isFirebaseInitialized)
+        {
+            Debug.Log("Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
+            return;
+        }
+
+        if (auth==null)
         {
             Debug.Log("파이어베이스인증 초기화되지않음");
             return;
@@ -101,12 +116,29 @@ public class FirebaseAuthManager : MonoBehaviour
         user = auth.CurrentUser;
         if(user !=null)
         {
-            UpdateLoggedInUI();
-        }
+            if (!isLoggedIn)
+            {
+                isLoggedIn = true;
+                UpdateLoggedInUI();
+            }
+            else
+            {
+                SetUIForLoggedIn();
+            }
+
+            }
         else
         {
-            UpdateLoggedOutUI();
-        }
+            if (isLoggedIn)
+            {
+                isLoggedIn = false;
+                UpdateLoggedOutUI();
+            }
+            else
+            {
+                SetUIForLoggedOut();
+            }
+            }
     }
 
     void UpdateLoggedInUI()
@@ -120,7 +152,6 @@ public class FirebaseAuthManager : MonoBehaviour
     {
             stateText.text = "Please log in.";
             SetUIForLoggedOut();
-
 
     }
 
@@ -148,6 +179,7 @@ public class FirebaseAuthManager : MonoBehaviour
             FirebaseUser newUser = authResult.User;
             stateText.text= "Registration successful: " + newUser.Email;
             RememberEmail();
+            isLoggedIn = true;
             SetUIForLoggedIn();
         }
         catch(FirebaseException e)
@@ -180,6 +212,7 @@ public class FirebaseAuthManager : MonoBehaviour
             FirebaseUser newUser = authResult.User;
             stateText.text= "Login successful: " + newUser.Email;
             RememberEmail();
+            isLoggedIn = true;
             SetUIForLoggedIn();
         }
         catch (FirebaseException e)
@@ -193,6 +226,7 @@ public class FirebaseAuthManager : MonoBehaviour
     {
         auth.SignOut();
         stateText.text= "You have logged out.";
+        isLoggedIn = false;
         SetUIForLoggedOut();
     }
 
@@ -201,15 +235,22 @@ public class FirebaseAuthManager : MonoBehaviour
         loginButton.gameObject.SetActive(false);  // 로그인 버튼 감춤
         logoutButton.gameObject.SetActive(true);  // 로그아웃 버튼 보임
 
-        loginStateButton.GetComponent<Image>().sprite = loggedInSprite;
-    }
+        // 로그인 상태 버튼 스프라이트 변경
+        if (loginStateButton != null && loggedInSprite != null)
+        {
+            loginStateButton.GetComponent<Image>().sprite = loggedInSprite;
+        }
+        }
 
     void SetUIForLoggedOut()
     {
         loginButton.gameObject.SetActive(true);   // 로그인 버튼 보임
         logoutButton.gameObject.SetActive(false); // 로그아웃 버튼 감춤
-       
-        loginStateButton.GetComponent<Image>().sprite = originalSprite;
+
+        if (loginStateButton != null && originalSprite != null)
+        {
+            loginStateButton.GetComponent<Image>().sprite = originalSprite;
+        }
     }
 
     void RememberEmail()

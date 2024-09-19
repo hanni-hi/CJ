@@ -8,7 +8,6 @@ public class InteractableObject : MonoBehaviour
 
     public void Interact()
     {
-        Debug.Log("¿Ã∞« Interactæﬂ");
 
         MemoUIManager.instance.ShowMemo(memoData);
     }
