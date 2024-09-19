@@ -38,7 +38,7 @@ public class UIManager : MonoBehaviour
     public Toggle start3;
 
     private GameTimer gameTimer;
-    private bool isPaused = false;
+    //private bool isPaused = false;
     private string selectedSceneName; //선택된 씬의 이름이 저장될 변수
     private GameObject selectedButton; //현재 선택된 맵 버튼을 저장함
     private Sprite originalSprite; //원래 스프라이트
@@ -108,13 +108,15 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "Demo Scene V1(Blue)") // 로비 씬의 이름을 넣으세요
-        {
-
-            // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
-            InitializeLobbyUI();
-        }
-        else if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")
+       // if (scene.name == "Demo Scene V1(Blue)") // 로비 씬의 이름을 넣으세요
+       // {
+       //     // 씬을 다시 로드하여 초기화
+       //     SceneManager.LoadScene(scene.name);
+       //
+       //      // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
+       //      InitializeLobbyUI();
+       // }
+        if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")
         {
             
             gameTimer = FindObjectOfType<GameTimer>();
@@ -161,14 +163,14 @@ public class UIManager : MonoBehaviour
     {
         pauseUIPanel.SetActive(false);
         Time.timeScale = 1f;
-        isPaused = false;
+      //  isPaused = false;
     }
 
     public void ShowPauseMenu()
     {
         pauseUIPanel.SetActive(true);
         Time.timeScale = 0; //게임 시간 정지
-        isPaused = true;
+      //  isPaused = true;
     }
 
     public void RestartGame()
@@ -277,7 +279,28 @@ public class UIManager : MonoBehaviour
 
     public void ShowVictoryUI()
     {
-        if (gameTimer != null)
+        StartCoroutine(CheckFirebaseInitializedAndShowVictoryUI());
+
+    }
+
+
+
+    private IEnumerator CheckFirebaseInitializedAndShowVictoryUI()
+    {
+        float waitTime = 5f;
+        while (!FirebaseAuthManager.instance || !FirebaseAuthManager.instance.IsInitialized())
+        {
+            Debug.Log("FirebaseAuthManager가 아직 초기화되지 않았습니다. 재시도 중...");
+            yield return new WaitForSeconds(0.5f);
+            waitTime -= 0.5f;
+        
+            if(waitTime<=0)
+            {
+                Debug.LogError("FirebaseAuthManager 초기화에 실패했습니다. Victory UI를 표시할 수 없습니다.");
+                yield break;
+            }
+        }
+            if (gameTimer != null)
         {
             string gameName = "";
 
@@ -289,14 +312,6 @@ public class UIManager : MonoBehaviour
             {
                 gameName = "LEVEL MAP_02";
             }
-
-            // FirebaseAuthManager가 초기화되지 않았다면 경고 메시지 출력
-            if (FirebaseAuthManager.instance == null || !FirebaseAuthManager.instance.IsInitialized())
-            {
-                Debug.LogError("FirebaseAuthManager가 초기화되지 않았습니다. Victory UI를 표시할 수 없습니다.");
-                return;
-            }
-
             gameTimer.StopTimer(gameName);
 
             string finalTime = gameTimer.GetFormattedTime(); //타이머 시간 가져옴
@@ -375,30 +390,4 @@ public class UIManager : MonoBehaviour
         }
     }
 
-   // private void HandleMapSelected(string sceneName, GameObject mapButton)
-   // {
-   //     Image buttonImage = mapButton.GetComponent<Image>();
-   //
-   //     if(selectedButton==mapButton)
-   //     {
-   //         //이미 선택된 맵을 다시 클릭하면 선택을 취소
-   //         selectedSceneName = null;
-   //         selectedButton = null;
-   //         buttonImage.sprite = originalSprite; //원래 스프라이트로 복원
-   //
-   //     }
-   //     else
-   //     {
-   //         if(selectedButton !=null)
-   //         {
-   //             //이전에 선택된 버튼이 있다면 원래 스프라이트로 복원
-   //             selectedButton.GetComponent<Image>().sprite = originalSprite;
-   //         }
-   //
-   //         //새로운 맵 선택
-   //         selectedSceneName = sceneName;
-   //         selectedButton = mapButton;
-   //
-   //     }
-   // }
 }

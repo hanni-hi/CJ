@@ -70,3 +70,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Large files to ignore
+Assets/Firebase/Plugins/x86_64/FirebaseCppApp-12_2_1.bundle
+Assets/Firebase/Plugins/x86_64/FirebaseCppApp-12_2_1.so
+Assets/SCI-FI UI Pack Pro/SCI-FI UI Pack_V1 Pro(Blue)/SourceFiles/SciFiPro_BluePsd.zip

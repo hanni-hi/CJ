@@ -87,10 +87,4 @@ public class GameManager : MonoBehaviour
         UIManager.instance.HidePauseMenu();
         isPaused = false;
     }
-
-    public void LoadLobby()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene("Demo Scene V1(Blue)");
-    }
 }

@@ -31,9 +31,9 @@ public class Stage : MonoBehaviour
     private bool isSecondRoomTLPlayed = false; // 두 번째 방 타임라인이 재생되었는지 여부
     private bool shouldPlayFirstAfterSecond = false; // 두 번째 타임라인 후 첫 번째 타임라인 재생 여부
     public bool[] isDoorOpen = new bool[5]; // 각 문이 열렸는지 여부
-    private bool isSecondRoomTimelinePlaying = false; // 두 번째 방 타임라인이 재생 중인지 여부
+  //  private bool isSecondRoomTimelinePlaying = false; // 두 번째 방 타임라인이 재생 중인지 여부
     private bool isFirstStageTimelineWaiting = false; // 첫 번째 스테이지 타임라인 대기 상태
-    private bool isTimelinePlaying = false; //타임라인이 재생 중인지 여부
+   // private bool isTimelinePlaying = false; //타임라인이 재생 중인지 여부
 
     private int nextImageIndex = 0;
     public Sprite newSprite;
@@ -235,7 +235,7 @@ public class Stage : MonoBehaviour
 
     void OnSecondRoomTimelineEnd(PlayableDirector director)
     {
-        isSecondRoomTimelinePlaying = false;
+      //  isSecondRoomTimelinePlaying = false;
         if(isFirstStageTimelineWaiting)
         {
             FirstStageTLDirector.Play();

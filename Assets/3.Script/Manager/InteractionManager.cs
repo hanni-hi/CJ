@@ -18,7 +18,7 @@ public class InteractionManager : MonoBehaviour
     public TMP_InputField passwordInputField; // 비밀번호 입력 필드
     public string correctPassword = "4321"; // 정답 비밀번호
     private GameObject currentInteractable; // 현재 상호작용 가능한 오브젝트
-    private bool isUIActive = false; // UI가 활성화 되어 있는지 확인하는 변수
+   // private bool isUIActive = false; // UI가 활성화 되어 있는지 확인하는 변수
     private bool isDoorOpening = false;
 
     public Color highlightcolor = Color.red;

@@ -23,7 +23,7 @@ public class FirebaseAuthManager : MonoBehaviour
     public Button logoutButton;
     public GameObject loginUIPanel;
 
-   // private bool isInitialized = false;
+   private bool isFirebaseInitialized = false;
 
     void Awake()
     {
@@ -31,11 +31,7 @@ public class FirebaseAuthManager : MonoBehaviour
         {
             instance=this;
             DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+
         // Firebase 초기화
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
@@ -45,8 +41,8 @@ public class FirebaseAuthManager : MonoBehaviour
               //  FirebaseApp app = FirebaseApp.DefaultInstance;
                 auth = FirebaseAuth.DefaultInstance;
 
-              //  // Firebase 초기화 완료 표시
-              //  isInitialized = true;
+                //  // Firebase 초기화 완료 표시
+                isFirebaseInitialized = true;
 
                 // Firebase가 초기화된 후 현재 사용자 체크
                 CheckCurrentUser();
@@ -56,6 +52,11 @@ public class FirebaseAuthManager : MonoBehaviour
                 Debug.LogError("Firebase dependencies not available: " + task.Result);
             }
         });
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
     void Start()
     {
@@ -69,17 +70,25 @@ public class FirebaseAuthManager : MonoBehaviour
 
     public bool IsInitialized()
     {
-        return auth !=null;
+        return isFirebaseInitialized;
     }
 
     private void OnEnable()
     {
+        if (isFirebaseInitialized)
+        {
             CheckCurrentUser();
-
+        }
     }
 
     public void CheckCurrentUser()
     {
+        if(auth==null)
+        {
+            Debug.Log("파이어베이스인증 초기화되지않음");
+            return;
+        }
+
         Debug.Log("상태를 표시할게요");
         user = auth.CurrentUser;
         if(user !=null)
@@ -111,6 +120,17 @@ public class FirebaseAuthManager : MonoBehaviour
         string email = emailInputField.text;
         string password = passwordInputField.text;
 
+        if(string.IsNullOrEmpty(email)||!email.Contains("@"))
+        {
+            stateText.text = "Invalid email format.";
+            return;
+        }
+        if(string.IsNullOrEmpty(password)||password.Length<6)
+        {
+            stateText.text = "Password must be at least 6 characters long.";
+            return;
+        }
+
         try
         {
             // Firebase의 사용자 생성 요청을 비동기로 보냅니다.
@@ -125,12 +145,25 @@ public class FirebaseAuthManager : MonoBehaviour
         {
             stateText.text= "Failed: " + e.Message;
         }
+
     }
     
     public async void LogIn()
     {
         string email = emailInputField.text;
         string password = passwordInputField.text;
+
+        // 이메일 및 비밀번호 유효성 검사
+        if (string.IsNullOrEmpty(email) || !email.Contains("@"))
+        {
+            stateText.text = "Invalid email format.";
+            return;
+        }
+        if (string.IsNullOrEmpty(password) || password.Length < 6)
+        {
+            stateText.text = "Password must be at least 6 characters long.";
+            return;
+        }
 
         try
         {

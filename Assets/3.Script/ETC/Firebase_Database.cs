@@ -9,13 +9,23 @@ using Firebase.Database;
 using Firebase.Auth;
 using Firebase.Unity;
 
-/*
-사용자가 클릭 이벤트를 통해 데이터를 Firebase Realtime Database에 저장할 수 있도록
-사용자의 username과 email을 JSON 형식으로 변환한 후, 이를 Firebase 데이터베이스에 업로드
-*/
-
 public class Firebase_Database : MonoBehaviour
 {
+    DatabaseReference reference; //Firebase Database의 루트 참조입니다. Firebase와 통신하는 데 사용됩니다.
+    int maxRetryCount = 3;
+    int currentRetry = 0;
+    
+    public TextMeshProUGUI[] Rank = new TextMeshProUGUI[7];
+    private string[] strRank; //Firebase에서 불러온 랭킹 정보를 임시로 저장하는 배열입니다.
+    private long strLen; //Firebase에서 불러온 데이터의 총 개수입니다.
+
+   // private bool textLoadBool = false;//데이터를 다 불러온 후에 텍스트를 업데이트할지를 결정하는 플래그입니다.
+
+    string uniqueKey = Guid.NewGuid().ToString();
+
+    public GameObject rankingUIpanel;
+
+    
     //JSON 파일로 만들기 위해 CLASS 정의 
     public class User //사용자의 데이터를 구조화하기 위함
     {
@@ -27,34 +37,37 @@ public class Firebase_Database : MonoBehaviour
             this.email = email;
         }
     }
-    DatabaseReference reference; //Firebase Database의 루트 참조입니다. Firebase와 통신하는 데 사용됩니다.
-    int count = 1;
-    public TextMeshProUGUI[] Rank = new TextMeshProUGUI[7];
-    private string[] strRank; //Firebase에서 불러온 랭킹 정보를 임시로 저장하는 배열입니다.
-    private long strLen; //Firebase에서 불러온 데이터의 총 개수입니다.
-
-    private bool textLoadBool = false;//데이터를 다 불러온 후에 텍스트를 업데이트할지를 결정하는 플래그입니다.
 
     void Start() //Firebase와의 통신을 시작하는 초기 설정을 담당
     {
-        reference = FirebaseDatabase.DefaultInstance.RootReference;    
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        {
+            if (task.Result == DependencyStatus.Available)
+            {
+                reference = FirebaseDatabase.DefaultInstance.RootReference;
+            }
+            else
+            {
+                Debug.LogError("Could not resolve all Firebase dependencies: " + task.Result);
+            }
+        });
     }
 
-    void Update()
+   // void LateUpdate()
+   // {
+   //     if(textLoadBool)
+   //     {
+   //         TextLoad();
+   //     }
+   //   //  if (Time.timeScale != 0.0f) Time.timeScale = 0.0f;
+   // }
+
+    public void OnRankingUIPanelOpened()
     {
-        if (Rank[0].text == "ID")
+        if(rankingUIpanel.activeSelf)
         {
             DataLoad();
         }
-        
-    }
-    void LateUpdate()
-    {
-        if(textLoadBool)
-        {
-            TextLoad();
-        }
-      //  if (Time.timeScale != 0.0f) Time.timeScale = 0.0f;
     }
 
     //게임 승리 시 시간과 이메일 저장
@@ -72,10 +85,10 @@ public class Firebase_Database : MonoBehaviour
         string userEmail = authManager.user.Email;
         string timeFormatted = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(elapsedTime / 60), Mathf.FloorToInt(elapsedTime % 60));
 
-        int count = (int)Time.time;
+       // int count = (int)Time.time;
 
         //firebase에 저장
-        reference.Child("rank").Child("num" + count.ToString()).SetValueAsync(new Dictionary<string, object>
+        reference.Child("rank").Child(uniqueKey).SetValueAsync(new Dictionary<string, object>
         { {"email",userEmail },
             {"game",gameName },
           {"score",timeFormatted }
@@ -86,10 +99,17 @@ public class Firebase_Database : MonoBehaviour
     //랭킹 데이터 불러오기
     void DataLoad() //Database에서 랭킹 데이터를 비동기로 불러오는 메서드
     {
+        if(currentRetry>=maxRetryCount)
+        {
+            Debug.LogError("Failed to load data after multiple attempts.");
+            return;
+        }
+
         reference.Child("rank").GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted)
             {
+                currentRetry++;
                 DataLoad();
             }
             else if (task.IsCompleted)
@@ -108,14 +128,13 @@ public class Firebase_Database : MonoBehaviour
                                     + rankInfo["score"].ToString();
                     count++;
                 }
-                textLoadBool = true;
+                TextLoad();
             }
         });
     }
 
     void TextLoad() //불러온 데이터를 UI에 표시하는 메서드
     {
-        textLoadBool = false;
         Array.Sort(strRank, (x,y)=>
         {
             string[] xParts = x.Split('|')[1].Split(':');
@@ -141,53 +160,4 @@ public class Firebase_Database : MonoBehaviour
             Rank[i].text = strRank[i];
         }
     }
-
-   // public void OnClickSave()
-   // {
-   //                               //userId , name , email
-   //     writeNewUser("personal information","Han","bittersweeety@gmail.com",count);
-   //     count++;
-   // }
-   //
-   // //로드 버튼 클릭 시
-   // public void LoadBtn()
-   // {
-   //     readUser("personal information");
-   // }
-   //
-   //private void writeNewUser(string userId, string name,string email,int count)
-   // {
-   //     //클래스 user 변수를 만들고 받아온 name,email 을 대입
-   //     User user = new User(name, email);
-   //     //대입 시킨 클래스 변수 user를 json 파일로 변경
-   //     string json = JsonUtility.ToJson(user);
-   //     //DatabaseReference 변수에 uderId를 자식으로 변환되 json 파일을 업로드 
-   //     reference.Child(userId).Child("num"+count.ToString()).SetRawJsonValueAsync(json);
-   // }
-   //
-   // private void readUser(string userId)
-   // {
-   //     //reference의 자식 userId를 task로 받음
-   //     reference.Child(userId).GetValueAsync().ContinueWith(task =>
-   //     {
-   //         if (task.IsFaulted)
-   //         {
-   //             Debug.Log("Error");
-   //         }
-   //         else if (task.IsCompleted)
-   //         {
-   //             //task의 결과를 받는 변수
-   //             DataSnapshot snapshot = task.Result;
-   //             //snapshot의 자식 개수를 확인
-   //             Debug.Log(snapshot.ChildrenCount);
-   //
-   //             //각 데이터를 IDictionary로 변환해 각 이름에 맞게 변수 초기화
-   //             foreach (DataSnapshot data in snapshot.Children)
-   //             {
-   //                 IDictionary personInfo = (IDictionary)data.Value;
-   //                 Debug.Log("email: " + personInfo["email"] + ", username: " + personInfo["username"] + ", num : " + personInfo["num"]);
-   //             }
-   //         }
-   //     });
-   // }
 }
