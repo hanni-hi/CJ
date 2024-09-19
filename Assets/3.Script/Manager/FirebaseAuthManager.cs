@@ -19,8 +19,11 @@ public class FirebaseAuthManager : MonoBehaviour
     public Toggle remeberMeToggle;
 
     public Button loginButton;
+    public Button loginStateButton;
     public Button registerButton;
     public Button logoutButton;
+    public Sprite loggedInSprite;
+    private Sprite originalSprite;
     public GameObject loginUIPanel;
 
    private bool isFirebaseInitialized = false;
@@ -31,6 +34,11 @@ public class FirebaseAuthManager : MonoBehaviour
         {
             instance=this;
             DontDestroyOnLoad(gameObject);
+
+            if(loginStateButton !=null)
+            {
+                originalSprite = loginStateButton.GetComponent<Image>().sprite;
+            }
 
         // Firebase 초기화
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
@@ -113,6 +121,7 @@ public class FirebaseAuthManager : MonoBehaviour
             stateText.text = "Please log in.";
             SetUIForLoggedOut();
 
+
     }
 
     public async void Create()
@@ -191,12 +200,16 @@ public class FirebaseAuthManager : MonoBehaviour
     {
         loginButton.gameObject.SetActive(false);  // 로그인 버튼 감춤
         logoutButton.gameObject.SetActive(true);  // 로그아웃 버튼 보임
+
+        loginStateButton.GetComponent<Image>().sprite = loggedInSprite;
     }
 
     void SetUIForLoggedOut()
     {
         loginButton.gameObject.SetActive(true);   // 로그인 버튼 보임
         logoutButton.gameObject.SetActive(false); // 로그아웃 버튼 감춤
+       
+        loginStateButton.GetComponent<Image>().sprite = originalSprite;
     }
 
     void RememberEmail()

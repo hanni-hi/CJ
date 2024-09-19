@@ -128,7 +128,12 @@ public class Firebase_Database : MonoBehaviour
                                     + rankInfo["score"].ToString();
                     count++;
                 }
-                TextLoad();
+
+                // UI 업데이트를 메인 스레드에서 수행
+                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                {
+                    TextLoad();
+                });
             }
         });
     }

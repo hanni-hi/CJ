@@ -328,7 +328,7 @@ public class UIManager : MonoBehaviour
     {
         if(gameTimer != null)
         {
-            gameTimer.StopTimer("Unknown Level");
+            gameTimer.StopTimer("Fail Game");
 
             string finalTime = gameTimer.GetFormattedTime();
             gameOverTimeText.text = finalTime;
