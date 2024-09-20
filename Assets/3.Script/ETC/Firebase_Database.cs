@@ -9,6 +9,11 @@ using Firebase.Database;
 using Firebase.Auth;
 using Firebase.Unity;
 
+/*
+파이어베이스 실시간 데이터베이스와 통신 담당 / 게임에 승리한 시간 / 사용자 이메일 저장 / 랭킹을 불러옴
+
+*/
+
 public class Firebase_Database : MonoBehaviour
 {
     DatabaseReference reference; //Firebase Database의 루트 참조입니다. Firebase와 통신하는 데 사용됩니다.
@@ -18,8 +23,6 @@ public class Firebase_Database : MonoBehaviour
     public TextMeshProUGUI[] Rank = new TextMeshProUGUI[7];
     private string[] strRank; //Firebase에서 불러온 랭킹 정보를 임시로 저장하는 배열입니다.
     private long strLen; //Firebase에서 불러온 데이터의 총 개수입니다.
-
-   // private bool textLoadBool = false;//데이터를 다 불러온 후에 텍스트를 업데이트할지를 결정하는 플래그입니다.
 
     string uniqueKey = Guid.NewGuid().ToString();
 
@@ -64,9 +67,17 @@ public class Firebase_Database : MonoBehaviour
 
     public void OnRankingUIPanelOpened()
     {
-        if(rankingUIpanel.activeSelf)
+
+        Debug.Log("OnRankingUIPanelOpened 호출됨.");
+        InitializeRankUI(); // 전체 UI 초기화
+        DataLoad();
+    }
+
+    private void InitializeRankUI()
+    {
+        for(int i=0; i<Rank.Length;i++)
         {
-            DataLoad();
+            Rank[i].text = "";
         }
     }
 
@@ -117,9 +128,16 @@ public class Firebase_Database : MonoBehaviour
             {
                 DataSnapshot snapshot = task.Result;
 
-                int count = 0;
-                strLen = snapshot.ChildrenCount;
-                strRank = new string[strLen];
+                // 데이터 로드 확인 로그
+                Debug.Log("Firebase 데이터 로드 완료. 데이터 개수: " + snapshot.ChildrenCount);
+
+                if (snapshot.ChildrenCount == 0)
+                {
+                    Debug.LogWarning("랭킹 데이터가 없습니다.");
+                    return;
+                }
+
+                List<string> validRanks = new List<string>(); // 유효한 데이터만 저장할 리스트
 
                 foreach (DataSnapshot data in snapshot.Children)
                 {
@@ -127,35 +145,39 @@ public class Firebase_Database : MonoBehaviour
 
                     if (rankInfo.Contains("email") && rankInfo.Contains("game") && rankInfo.Contains("score"))
                     {
-                        strRank[count] = rankInfo["email"].ToString() + "  |  "
-                                    + rankInfo["game"].ToString() + "  |  "
+                        string gameName = rankInfo["game"].ToString();
+
+                        if (gameName == "LEVEL MAP_01" || gameName == "LEVEL MAP_02")
+                        {
+                            string rankData = rankInfo["email"].ToString() + "  |  "
+                                    + gameName + "  |  "
                                     + rankInfo["score"].ToString();
-                        count++;
+
+                            validRanks.Add(rankData); // 유효한 데이터 추가
+                            Debug.Log("불러온 데이터: " + rankData);  // 불러온 데이터 확인
+                        }
                     }
                     else
                     {
                         Debug.Log("랭킹 데이터가 이상해요~");
                     }
                 }
-
-                if (UnityMainThreadDispatcher.instance != null)
-                {
-                    // UI 업데이트를 메인 스레드에서 수행
-                    UnityMainThreadDispatcher.Instance().Enqueue(() =>
-                    {
-                        TextLoad();
-                    });
-                }
-                else
-                {
-                    Debug.LogError("UnityMainThreadDispatcher 가 없어요...");
-                }
+                strRank = validRanks.ToArray(); // 유효한 데이터를 배열로 변환
+                TextLoad();
             }
         });
     }
 
     void TextLoad() //불러온 데이터를 UI에 표시하는 메서드
     {
+        Debug.Log("TextLoad() 호출됨. 불러온 데이터를 UI에 표시합니다.");
+
+        if (strRank == null || strRank.Length == 0)
+        {
+            Debug.LogError("strRank 배열이 비어있거나 null입니다.");
+            return;
+        }
+
         Array.Sort(strRank, (x,y)=>
         {
             try
@@ -191,9 +213,16 @@ public class Firebase_Database : MonoBehaviour
             }
         }); //시간순 정렬
 
-        for(int i=0; i<Mathf.Min(Rank.Length,strRank.Length);i++)
+        for(int i=0; i<Rank.Length;i++)
         {
-            Rank[i].text = strRank[i];
-        }
+            if (i < strRank.Length)
+            {
+                Rank[i].text = strRank[i];
+            }
+            else
+            {
+                Rank[i].text = "";
+            }
+            }
     }
 }

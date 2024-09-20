@@ -18,7 +18,7 @@ public class UIManager : MonoBehaviour
     public GameObject pauseUIPanel;
     public GameObject storeUIPanel;
     public GameObject rankingUIPanel;
-   // public GameObject aboutusUIPanel;
+    public GameObject aboutusUIPanel;
     public GameObject optionUIPanel;
     public GameObject warningMapselectUIPanel;
     public GameObject quitButton;
@@ -42,6 +42,8 @@ public class UIManager : MonoBehaviour
     private string selectedSceneName; //선택된 씬의 이름이 저장될 변수
     private GameObject selectedButton; //현재 선택된 맵 버튼을 저장함
     private Sprite originalSprite; //원래 스프라이트
+
+    private string githubUrl = "https://github.com/hanni-hi";
 
     private void Awake()
     {
@@ -118,7 +120,9 @@ public class UIManager : MonoBehaviour
        // }
         if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")
         {
-            
+
+            StartCoroutine(CheckFirebaseInitializedAtStart());
+
             gameTimer = FindObjectOfType<GameTimer>();
             if (gameTimer == null)
             {
@@ -126,6 +130,25 @@ public class UIManager : MonoBehaviour
             }
             AssignHeartImages();
         }
+    }
+
+    private IEnumerator CheckFirebaseInitializedAtStart()
+    {
+        float waitTime = 5f;
+    while(!FirebaseAuthManager.instance||!FirebaseAuthManager.instance.IsInitialized())
+        {
+            Debug.Log("FirebaseAuthManager 초기화 대기 중...");
+            yield return new WaitForSeconds(0.5f);
+            waitTime -= 0.5f;
+
+            if(waitTime<=0)
+            {
+                Debug.Log("파이어베이스 초기화 실패");
+                yield break;
+            }
+        }
+             
+                Debug.Log("파이어베이스 초기화 완료");
     }
 
     private void AssignHeartImages()
@@ -222,6 +245,7 @@ public class UIManager : MonoBehaviour
         pauseUIPanel.SetActive(false);
         loginUIPanel.SetActive(false);
         warningMapselectUIPanel.SetActive(false);
+        aboutusUIPanel.SetActive(false);
 
     }
 
@@ -242,10 +266,10 @@ public class UIManager : MonoBehaviour
         rankingUIPanel.SetActive(true);
     }
 
-  //  public void OnASButtonClicked()
-  //  {
-  //      aboutusUIPanel.SetActive(true);
-  //  }
+    public void OnASButtonClicked()
+    {
+        aboutusUIPanel.SetActive(true);
+    }
 
     public void OnOptionClicked()
     {
@@ -279,27 +303,7 @@ public class UIManager : MonoBehaviour
 
     public void ShowVictoryUI()
     {
-        StartCoroutine(CheckFirebaseInitializedAndShowVictoryUI());
 
-    }
-
-
-
-    private IEnumerator CheckFirebaseInitializedAndShowVictoryUI()
-    {
-        float waitTime = 5f;
-        while (!FirebaseAuthManager.instance || !FirebaseAuthManager.instance.IsInitialized())
-        {
-            Debug.Log("FirebaseAuthManager가 아직 초기화되지 않았습니다. 재시도 중...");
-            yield return new WaitForSeconds(0.5f);
-            waitTime -= 0.5f;
-        
-            if(waitTime<=0)
-            {
-                Debug.LogError("FirebaseAuthManager 초기화에 실패했습니다. Victory UI를 표시할 수 없습니다.");
-                yield break;
-            }
-        }
             if (gameTimer != null)
         {
             string gameName = "";
@@ -388,6 +392,11 @@ public class UIManager : MonoBehaviour
                 break;
             }
         }
+    }
+
+    public void OpenGitHubPage()
+    {
+        Application.OpenURL(githubUrl);
     }
 
 }

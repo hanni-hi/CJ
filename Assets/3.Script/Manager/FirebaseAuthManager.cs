@@ -7,6 +7,13 @@ using Firebase;
 using System.Threading.Tasks;
 using TMPro;
 
+/*
+ 파이어베이스 인증 / 사용자 로그인 / 로그아웃 / 회원가입 / UI 업데이트 / 사용자 상태 관리
+ 
+ 지금 현재 이 스크립트에서 파이어베이스 초기화가 제대로 안되서 문제가 일어나는 중임
+ */
+
+
 public class FirebaseAuthManager : MonoBehaviour
 {
     public static FirebaseAuthManager instance = null;
@@ -28,57 +35,109 @@ public class FirebaseAuthManager : MonoBehaviour
 
    private bool isFirebaseInitialized = false;
    private bool isLoggedIn = false;
+    private bool panelwasActive = false;
 
-    void Awake()
+    void Awake() //파이어베이스 초기화 
     {
         if(instance==null)
         {
             instance=this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log("FirebaseAuthManager instance 설정 완료");
+            InitializeFirebase();
 
-            if(loginStateButton !=null)
+            if (loginStateButton !=null)
             {
                 originalSprite = loginStateButton.GetComponent<Image>().sprite;
             }
 
         // Firebase 초기화
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
-        {
-            if (task.IsCompleted && task.Result == DependencyStatus.Available)
-            {
-                // Firebase 초기화가 완료되면 auth 객체 사용 가능
-              //  FirebaseApp app = FirebaseApp.DefaultInstance;
-                auth = FirebaseAuth.DefaultInstance;
-
-                //  // Firebase 초기화 완료 표시
-                isFirebaseInitialized = true;
-
-                // Firebase가 초기화된 후 현재 사용자 체크는 메인 스레드에서 실행되어야 함
-                UnityMainThreadDispatcher.Instance().Enqueue(() =>
-                {
-                    // Firebase가 초기화된 후 현재 사용자 체크
-                    CheckCurrentUser();
-                });
-            }
-            else
-            {
-                Debug.LogError("Firebase dependencies not available: " + task.Result);
-            }
-        });
+       // FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+       // {
+       //     if (task.IsCompleted && task.Result == DependencyStatus.Available)
+       //     {
+       //         // Firebase가 초기화된 후 현재 사용자 체크는 메인 스레드에서 실행되어야 함
+       //         UnityMainThreadDispatcher.Instance().Enqueue(() =>
+       //         {
+       //
+       //         Debug.Log("초기화 성공★★★: " + task.Result);
+       //
+       //         // Firebase 초기화가 완료되면 auth 객체 사용 가능
+       //         FirebaseApp app = FirebaseApp.DefaultInstance;
+       //         
+       //             auth = FirebaseAuth.DefaultInstance;
+       //
+       //
+       //             if (FirebaseAuthManager.instance.auth != null)
+       //             {
+       //                 Debug.Log("Auth 초기화 성공");
+       //             }
+       //             else
+       //             {
+       //                 Debug.LogError("Auth 초기화 실패");
+       //             }
+       //
+       //
+       //
+       //
+       //             //  // Firebase 초기화 완료 표시
+       //             isFirebaseInitialized = true;
+       //
+       //             // Firebase가 초기화된 후 현재 사용자 체크
+       //             CheckCurrentUser();
+       //         });
+       //     }
+       //     else
+       //     {
+       //         Debug.LogError("초기화 실패함★★★: " + task.Result);
+       //     }
+       // });
         }
         else
         {
             Destroy(gameObject);
         }
     }
-    void Start()
+
+    public void InitializeFirebase()
     {
-        InitializeFirebase();
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        {
+            if (task.Result == DependencyStatus.Available)
+            {
+                auth = FirebaseAuth.DefaultInstance;
+                isFirebaseInitialized = true;
+
+            }
+            else
+            {
+                Debug.LogError("Firebase 초기화 실패: " + task.Result);
+            }
+        });
+
+        LoadRememberEmail();
     }
 
-    private void InitializeFirebase()
+    private void Update()
     {
-        LoadRememberEmail();
+        if(loginUIPanel.activeSelf&&!panelwasActive)
+        {
+            panelwasActive = true;
+            if(IsInitialized())
+            {
+                CheckCurrentUser();
+            }
+            else
+            {
+                Debug.Log("Update : Firebase가 아직 초기화되지 않았습니다.");
+            }
+        }
+
+        if(!loginUIPanel.activeSelf&&panelwasActive)
+        {
+            panelwasActive = false;
+        }
+
     }
 
     public bool IsInitialized()
@@ -86,23 +145,23 @@ public class FirebaseAuthManager : MonoBehaviour
         return isFirebaseInitialized;
     }
 
-    private void OnEnable()
-    {
-        if (isFirebaseInitialized)
-        {
-            CheckCurrentUser();
-        }
-        else
-        {
-            Debug.Log("Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
-        }
-    }
+   // private void OnEnable()
+   // {
+   //     if (FirebaseAuthManager.instance != null && FirebaseAuthManager.instance.IsInitialized())
+   //     {
+   //         CheckCurrentUser();
+   //     }
+   //     else
+   //     {
+   //         Debug.Log("OnEnable : Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
+   //     }
+   // }
 
     public void CheckCurrentUser()
     {
         if (!isFirebaseInitialized)
         {
-            Debug.Log("Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
+            Debug.Log("CheckCurrentUser : Firebase가 아직 초기화되지 않았습니다. 인증 상태를 확인할 수 없습니다.");
             return;
         }
 
@@ -222,7 +281,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
-    public void LogOut()
+    public void LogOut() //로그아웃
     {
         auth.SignOut();
         stateText.text= "You have logged out.";
@@ -230,7 +289,7 @@ public class FirebaseAuthManager : MonoBehaviour
         SetUIForLoggedOut();
     }
 
-    void SetUIForLoggedIn()
+    void SetUIForLoggedIn() //로그인한 상태의 ui 요소 적용
     {
         loginButton.gameObject.SetActive(false);  // 로그인 버튼 감춤
         logoutButton.gameObject.SetActive(true);  // 로그아웃 버튼 보임
@@ -242,7 +301,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
         }
 
-    void SetUIForLoggedOut()
+    void SetUIForLoggedOut() //로그아웃한 상태의 ui 요소 적용
     {
         loginButton.gameObject.SetActive(true);   // 로그인 버튼 보임
         logoutButton.gameObject.SetActive(false); // 로그아웃 버튼 감춤
@@ -253,7 +312,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
-    void RememberEmail()
+    void RememberEmail() //토글 활성화 여부를 확인하여 이메일 저장할지 결정
     {
         if(remeberMeToggle.isOn)
         {
@@ -266,7 +325,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
-    void LoadRememberEmail()
+    void LoadRememberEmail() //저장된 이메일이 있다면 불러오고 / 없다면 이메일 필드를 비워둠
     {
         if(PlayerPrefs.HasKey("rememberedEmail"))
         {
