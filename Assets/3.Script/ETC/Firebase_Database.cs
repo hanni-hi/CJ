@@ -116,61 +116,74 @@ public class Firebase_Database : MonoBehaviour
             return;
         }
 
-        reference.Child("rank").GetValueAsync().ContinueWith(task =>
-        {
+        StartCoroutine(LoadDataCoroutine()); // 코루틴을 통해 비동기 작업 처리
+    }
+
+    IEnumerator LoadDataCoroutine()
+    {
+
+        var task = reference.Child("rank").GetValueAsync(); // Firebase 비동기 작업 시작
+        yield return new WaitUntil(() => task.IsCompleted); // 비동기 작업이 완료될 때까지 대기
+
             if (task.IsFaulted)
             {
-            Debug.LogError("Data load failed: "+task.Exception);
+                Debug.LogError("Data load failed: " + task.Exception);
                 currentRetry++;
                 DataLoad();
             }
-            else if (task.IsCompleted)
+            else
             {
                 DataSnapshot snapshot = task.Result;
 
-                // 데이터 로드 확인 로그
-                Debug.Log("Firebase 데이터 로드 완료. 데이터 개수: " + snapshot.ChildrenCount);
+                    // 데이터 로드 확인 로그
+                    Debug.Log("Firebase 데이터 로드 완료. 데이터 개수: " + snapshot.ChildrenCount);
 
-                if (snapshot.ChildrenCount == 0)
-                {
-                    Debug.LogWarning("랭킹 데이터가 없습니다.");
-                    return;
-                }
-
-                List<string> validRanks = new List<string>(); // 유효한 데이터만 저장할 리스트
-
-                foreach (DataSnapshot data in snapshot.Children)
-                {
-                    IDictionary rankInfo = (IDictionary)data.Value;
-
-                    if (rankInfo.Contains("email") && rankInfo.Contains("game") && rankInfo.Contains("score"))
+                    if (snapshot.ChildrenCount == 0)
                     {
-                        string gameName = rankInfo["game"].ToString();
+                        Debug.LogWarning("랭킹 데이터가 없습니다.");
+                yield break; // 랭킹 데이터가 없으면 종료
+            }
 
-                        if (gameName == "LEVEL MAP_01" || gameName == "LEVEL MAP_02")
-                        {
-                            string rankData = rankInfo["email"].ToString() + "  |  "
-                                    + gameName + "  |  "
-                                    + rankInfo["score"].ToString();
+                    List<string> validRanks = new List<string>(); // 유효한 데이터만 저장할 리스트
 
-                            validRanks.Add(rankData); // 유효한 데이터 추가
-                            Debug.Log("불러온 데이터: " + rankData);  // 불러온 데이터 확인
-                        }
+                    foreach (DataSnapshot data in snapshot.Children)
+                    {
+                        IDictionary rankInfo = (IDictionary)data.Value;
+
+                        if (rankInfo.Contains("email") && rankInfo.Contains("game") && rankInfo.Contains("score"))
+                {
+                    string gameName = rankInfo["game"].ToString();
+
+                    // "LEVEL MAP_01" 또는 "LEVEL MAP_02"인 경우만 리스트에 추가
+                    if (gameName == "LEVEL MAP_01" || gameName == "LEVEL MAP_02")
+                    {
+                        string rankData = rankInfo["email"].ToString() + "  |  "
+                                        + gameName + "  |  "
+                                        + rankInfo["score"].ToString();
+
+                        validRanks.Add(rankData); // 유효한 데이터만 추가
+                        Debug.Log("불러온 데이터: " + rankData);
                     }
                     else
                     {
-                        Debug.Log("랭킹 데이터가 이상해요~");
+                        Debug.Log($"게임 '{gameName}' 데이터는 무시됨.");
                     }
                 }
-                strRank = validRanks.ToArray(); // 유효한 데이터를 배열로 변환
-                TextLoad();
+
+                else
+                {
+                    Debug.Log("랭킹 데이터가 이상해요~");
+                }
             }
-        });
+                    strRank = validRanks.ToArray(); // 유효한 데이터를 배열로 변환
+                    TextLoad();
+            }
     }
 
     void TextLoad() //불러온 데이터를 UI에 표시하는 메서드
     {
         Debug.Log("TextLoad() 호출됨. 불러온 데이터를 UI에 표시합니다.");
+        Debug.Log($"Rank 배열의 크기: {Rank.Length}");
 
         if (strRank == null || strRank.Length == 0)
         {
@@ -178,18 +191,14 @@ public class Firebase_Database : MonoBehaviour
             return;
         }
 
+        Debug.Log($"strRank 배열의 크기: {strRank.Length}");
+
         Array.Sort(strRank, (x,y)=>
         {
             try
             {
                 string[] xParts = x.Split('|');
                 string[] yParts = y.Split('|');
-
-                if(xParts.Length<3||yParts.Length<3)
-                {
-                    Debug.LogError("랭킹데이터포멧이 이상하네요...");
-                    return 0;
-                }
 
                 string[] xTimeParts = xParts[2].Trim().Split(':');
                 string[] yTimeParts = yParts[2].Trim().Split(':');
@@ -213,16 +222,30 @@ public class Firebase_Database : MonoBehaviour
             }
         }); //시간순 정렬
 
-        for(int i=0; i<Rank.Length;i++)
+        try
         {
-            if (i < strRank.Length)
+
+            for (int i = 0; i < Rank.Length; i++)
             {
-                Rank[i].text = strRank[i];
+                Debug.Log($"현재 Rank[{i}] 처리 중");
+
+                if (i < strRank.Length)
+                {
+                    Debug.Log($"Rank[{i}]에 할당될 텍스트: {strRank[i]}");
+                    Rank[i].text = strRank[i];
+                }
+                else
+                {
+                    Debug.Log($"Rank[{i}]는 비어 있습니다.");
+                    Rank[i].text = "";
+                }
+                Rank[i].fontSize = 60;
+
             }
-            else
-            {
-                Rank[i].text = "";
-            }
-            }
+        }
+        catch(Exception e)
+        {
+            Debug.LogError($"예외 발생: {e.Message}");
+        }
     }
 }
