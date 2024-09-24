@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
 
 //    $ => string.Format()
 
@@ -14,6 +15,15 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     //사용자 아이디 입력
     private string userID = "Han";
 
+    //UI관련 변수들
+    public GameObject lobbyUI;
+    public TextMeshProUGUI playerCountText;
+    public Timer gameTimer;
+    public Camera lobbyCamera;
+
+    private int requiredPlayer = 2;
+    private bool gameStarted = false;
+
     void Awake()
     {
         //같은 룸의 유저들에게 자동으로 씬을 로딩
@@ -22,8 +32,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         PhotonNetwork.GameVersion = version;
         //유저 아이디 할당
         PhotonNetwork.NickName = userID;
-        //포톤 서버와 통신 횟수 설정. 초당 30회
-        Debug.Log(PhotonNetwork.SendRate);
+      //  //포톤 서버와 통신 횟수 설정. 초당 30회
+      //  Debug.Log(PhotonNetwork.SendRate);
         //서버 접속
         PhotonNetwork.ConnectUsingSettings();
     
@@ -32,8 +42,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     //포톤 서버에 접속 후 호출되는 콜백 함수
     public override void OnConnectedToMaster()
     {
-        Debug.Log("마스터 서버에 들어왔어요! ");
-        Debug.Log($"PhotonNetwork.InLobby = {PhotonNetwork.InLobby}"); //로비 입장여부 bool로 표시 아마도 false
+      //  Debug.Log("마스터 서버에 들어왔어요! ");
+      //  Debug.Log($"PhotonNetwork.InLobby = {PhotonNetwork.InLobby}"); //로비 입장여부 bool로 표시 아마도 false
         PhotonNetwork.JoinLobby();   //로비입장
 
     }
@@ -41,7 +51,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     //로비에 접속 후 호출되는 콜백 함수
     public override void OnJoinedLobby()
     { 
-        Debug.Log($"PhotonNetwork.InLobby = {PhotonNetwork.InLobby}"); //아마도 true
+      //  Debug.Log($"PhotonNetwork.InLobby = {PhotonNetwork.InLobby}"); //아마도 true
 
         //랜덤한 룸에 접속하게 //랜덤 매치메이킹 기능 제공
         PhotonNetwork.JoinRandomRoom();
@@ -77,10 +87,48 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         Debug.Log($"PhotonNetwork.InRoom = {PhotonNetwork.InRoom}");
         Debug.Log($"현재 플레이어 수 = {PhotonNetwork.CurrentRoom.PlayerCount}");
 
-        //룸에 접속한 사용자 정보 확인     ActorNumber:플레이어고유값
-        foreach (var player in PhotonNetwork.CurrentRoom.Players)
+        // //룸에 접속한 사용자 정보 확인     ActorNumber:플레이어고유값
+        // foreach (var player in PhotonNetwork.CurrentRoom.Players)
+        // {
+        //     Debug.Log($"{player.Value.NickName}, {player.Value.ActorNumber}");
+        // }
+
+        UpdatePlayerCount();
+        CheckAndStartGame();
+
+
+    }
+
+    public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
+    {
+        UpdatePlayerCount();
+        CheckAndStartGame();
+    }
+
+    private void UpdatePlayerCount()
+    {
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        playerCountText.text = $" {playerCount} / 2 ";
+    }
+
+    private void CheckAndStartGame()
+    {
+        if(!gameStarted&&PhotonNetwork.CurrentRoom.PlayerCount==requiredPlayer)
         {
-            Debug.Log($"{player.Value.NickName}, {player.Value.ActorNumber}");
+            gameStarted = true;
+            StartCoroutine(StartGame());
+        }
+    }
+
+    private IEnumerator StartGame()
+    {
+        yield return new WaitForSeconds(2f);
+
+        lobbyUI.SetActive(false);
+        
+        if(lobbyCamera !=null)
+        {
+            lobbyCamera.gameObject.SetActive(false);
         }
 
         //캐릭터 출현 정보를 배열에 저장
@@ -90,18 +138,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         //캐릭터 생성
         PhotonNetwork.Instantiate("Stylized Astronaut",points[idx].position,points[idx].rotation,0);
 
-    }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        //타이머
+        gameTimer.StartTimer();
     }
 }

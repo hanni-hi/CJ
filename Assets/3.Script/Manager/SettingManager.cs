@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
+using System.IO;
+using UnityEngine.SceneManagement;
 
 
 public class SettingManager : MonoBehaviour
@@ -26,6 +28,7 @@ public class SettingManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
 

@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.IO;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,9 +15,10 @@ public class UIManager : MonoBehaviour
     public Sprite fullHeartSprite;
     public Sprite emptyHeartSprite;
 
+    public GameObject homeUIPanel;
     public GameObject quitUIPanel;
     public GameObject pauseUIPanel;
-    public GameObject storeUIPanel;
+   // public GameObject storeUIPanel;
     public GameObject rankingUIPanel;
     public GameObject aboutusUIPanel;
     public GameObject optionUIPanel;
@@ -25,6 +27,7 @@ public class UIManager : MonoBehaviour
     public GameObject mapselectButton;
     public GameObject firstgameButton;
     public GameObject secondgameButton;
+    public GameObject multigameButton;
     public GameObject selectButton;
     public GameObject gameOverUIPanel;
     public GameObject victoryUIPanel;
@@ -52,20 +55,9 @@ public class UIManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
 
-            //     DontDestroyOnLoad(storeUIPanel);
-            //     DontDestroyOnLoad(rankingUIPanel);
-            //   //  DontDestroyOnLoad(aboutusUIPanel);
-            //     DontDestroyOnLoad(optionUIPanel);
-            //     DontDestroyOnLoad(warningMapselectUIPanel);
-            //     DontDestroyOnLoad(quitUIPanel);
-            //     DontDestroyOnLoad(quitButton);
-            //     DontDestroyOnLoad(mapselectButton);
-            //     DontDestroyOnLoad(firstgameButton);
-            //     DontDestroyOnLoad(secondgameButton);
-            //     DontDestroyOnLoad(selectButton);
-            DontDestroyOnLoad(pauseUIPanel);
-            DontDestroyOnLoad(gameOverUIPanel);
-            DontDestroyOnLoad(victoryUIPanel);
+          //  DontDestroyOnLoad(pauseUIPanel);
+          //  DontDestroyOnLoad(gameOverUIPanel);
+          //  DontDestroyOnLoad(victoryUIPanel);
         }
         else
         {
@@ -91,6 +83,7 @@ public class UIManager : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+       // SaveReferencesToJSON();
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
@@ -110,17 +103,18 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-       // if (scene.name == "Demo Scene V1(Blue)") // 로비 씬의 이름을 넣으세요
-       // {
-       //     // 씬을 다시 로드하여 초기화
-       //     SceneManager.LoadScene(scene.name);
-       //
-       //      // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
-       //      InitializeLobbyUI();
-       // }
+        if (scene.name == "Demo Scene V1(Blue)") // 로비 씬의 이름을 넣으세요
+        {
+            homeUIPanel.SetActive(true);
+            //  // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
+            //  InitializeLobbyUI();
+         //  LoadReferencesFromJSON();
+
+            RemoveDuplicateObjects();
+        }
         if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")
         {
-
+            homeUIPanel.SetActive(false);
             StartCoroutine(CheckFirebaseInitializedAtStart());
 
             gameTimer = FindObjectOfType<GameTimer>();
@@ -129,6 +123,32 @@ public class UIManager : MonoBehaviour
                 Debug.LogError("GameTimer를 찾을 수 없습니다. 타이머가 초기화되지 않았습니다.");
             }
             AssignHeartImages();
+        }
+        if (scene.name == "SciFi_Warehouse_M")
+        {
+            homeUIPanel.SetActive(false);
+            StartCoroutine(CheckFirebaseInitializedAtStart());
+
+            gameTimer = FindObjectOfType<GameTimer>();
+            if (gameTimer == null)
+            {
+                Debug.LogError("GameTimer를 찾을 수 없습니다. 타이머가 초기화되지 않았습니다.");
+            }
+            AssignHeartImages();
+        }
+    }
+
+    private void RemoveDuplicateObjects()
+    {
+        GameObject[] dontDestroyObjects = { pauseUIPanel, gameOverUIPanel, victoryUIPanel };
+
+        foreach(GameObject obj in dontDestroyObjects)
+        {
+            GameObject existingObj = GameObject.Find(obj.name);
+            if(existingObj !=null && existingObj != obj)
+            {
+                Destroy(existingObj);
+            }
         }
     }
 
@@ -164,17 +184,7 @@ public class UIManager : MonoBehaviour
 
     private void InitializeLobbyUI()
     {
-        // 여기서 UI 상태 초기화
-        quitUIPanel.SetActive(false);
-        storeUIPanel.SetActive(false);
-        rankingUIPanel.SetActive(false);
-        optionUIPanel.SetActive(false);
-        mapselectButton.SetActive(false);
-        pauseUIPanel.SetActive(false);
-       // aboutusUIPanel.SetActive(false);
 
-
-        // 기타 필요한 초기화 작업 수행
     }
 
     public void OnLoginButtonClicked()
@@ -238,7 +248,7 @@ public class UIManager : MonoBehaviour
     public void OnCancelButtonClicked()
     {
         quitUIPanel.SetActive(false);
-        storeUIPanel.SetActive(false);
+       // storeUIPanel.SetActive(false);
         rankingUIPanel.SetActive(false);
         optionUIPanel.SetActive(false);
         mapselectButton.SetActive(false);
@@ -254,11 +264,6 @@ public class UIManager : MonoBehaviour
 
         warningMapselectUIPanel.SetActive(false);
 
-    }
-
-    public void OnStoreButtonClicked()
-    {
-        storeUIPanel.SetActive(true);
     }
 
     public void OnRankingButtonClicked()
@@ -285,8 +290,15 @@ public class UIManager : MonoBehaviour
     public void Onsecondgameselected()
     {
         //  HandleMapSelected("",secondgameButton);  두번째 게임 신이 완성되면 이름 넣기
+        //  HandleMapSelected("",secondgameButton);  두번째 게임 신이 완성되면 이름 넣기
         selectedSceneName = "Example_01";
     }
+    public void Onmultigameselected()
+    {
+
+        selectedSceneName = "SciFi_Warehouse_M";
+    }
+
 
     public void RealgameStart()
     {
