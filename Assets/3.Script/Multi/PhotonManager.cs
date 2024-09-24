@@ -24,6 +24,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     private int requiredPlayer = 2;
     private bool gameStarted = false;
 
+    public GameObject[] playerPrefabs;
+    private List<GameObject> availablePrefabs;
+
+
     void Awake()
     {
         //같은 룸의 유저들에게 자동으로 씬을 로딩
@@ -36,6 +40,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
       //  Debug.Log(PhotonNetwork.SendRate);
         //서버 접속
         PhotonNetwork.ConnectUsingSettings();
+
+        availablePrefabs = new List<GameObject>(playerPrefabs);
     
     }
 
@@ -135,9 +141,15 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         Transform[] points = GameObject.Find("SpawnPointGroup").GetComponentsInChildren<Transform>();
         int idx = Random.Range(1,points.Length);
 
-        //캐릭터 생성
-        PhotonNetwork.Instantiate("Stylized Astronaut",points[idx].position,points[idx].rotation,0);
+        if (availablePrefabs.Count > 0)
+        {
+            int prefabIndex = Random.Range(0,availablePrefabs.Count);
+            GameObject selectedPrefab = availablePrefabs[prefabIndex];
+            availablePrefabs.RemoveAt(prefabIndex);
 
+            //캐릭터 생성
+            PhotonNetwork.Instantiate(selectedPrefab.name, points[idx].position, points[idx].rotation, 0);
+        }
         //타이머
         gameTimer.StartTimer();
     }

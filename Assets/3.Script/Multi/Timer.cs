@@ -11,7 +11,7 @@ public class Timer : MonoBehaviour
     public TextMeshProUGUI timer;
     public GameObject resultUIPanel;
 
-    private bool isGameRunning = true;
+    private bool isGameRunning = false;
 
     void Start()
     {

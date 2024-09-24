@@ -23,16 +23,16 @@ public class MemoUIManager : MonoBehaviour
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI contentText;
 
-  //  public Image[] canvasImages;
-  //  public Sprite newSprite;
-  //  private int nextImageIndex = 0;
+    //  public Image[] canvasImages;
+    //  public Sprite newSprite;
+    //  private int nextImageIndex = 0;
 
     private HashSet<MemoData> interactedObjects = new HashSet<MemoData>(); // 상호작용한 오브젝트 추적
     public bool isMemoClosed = true; // 처음에는 Memo UI가 닫힌 상태
 
     private void Awake()
     {
-        if(instance==null)
+        if (instance == null)
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
@@ -44,16 +44,16 @@ public class MemoUIManager : MonoBehaviour
         }
     }
 
-   // public void AssignCanvasImages(Image[] newCanvasImages)
-   // {
-   //     canvasImages = newCanvasImages;
-   // }
+    // public void AssignCanvasImages(Image[] newCanvasImages)
+    // {
+    //     canvasImages = newCanvasImages;
+    // }
 
     public void ShowMemo(MemoData memoData)
-    {   
+    {
         isMemoClosed = false;
 
-        if(!interactedObjects.Contains(memoData))
+        if (!interactedObjects.Contains(memoData))
         {
             interactedObjects.Add(memoData);
 
@@ -64,7 +64,7 @@ public class MemoUIManager : MonoBehaviour
             //  }
 
             Stage stage = FindObjectOfType<Stage>();
-            if(stage != null)
+            if (stage != null)
             {
                 stage.InteractWithMemo(memoData);
             }
@@ -99,18 +99,23 @@ public class MemoUIManager : MonoBehaviour
 
     public void HideMemo()
     {
-        if(memoUIInstance !=null&&memoUIInstance.activeSelf)
+        if (memoUIInstance != null && memoUIInstance.activeSelf)
         {
             memoUIInstance.SetActive(false);
         }
-            isMemoClosed = true;
+        isMemoClosed = true;
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Return) && memoUIInstance.activeSelf)
+        if (Input.GetKeyDown(KeyCode.Return) && memoUIInstance.activeSelf)
         {
             HideMemo();
         }
+    }
+
+    public void ClearInteractedObjects()
+    {
+        interactedObjects.Clear();
     }
 }

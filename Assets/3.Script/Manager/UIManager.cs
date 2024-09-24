@@ -211,6 +211,14 @@ public class UIManager : MonoBehaviour
         Time.timeScale = 1f;
         pauseUIPanel.SetActive(false);
         victoryUIPanel.SetActive(false);
+
+        if(SceneManager.GetActiveScene().name== "Example_01")
+        {
+            if(MemoUIManager.instance !=null)
+            {
+                MemoUIManager.instance.ClearInteractedObjects();
+            }
+        }
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);// 현재 씬 다시 로드
     }
 
