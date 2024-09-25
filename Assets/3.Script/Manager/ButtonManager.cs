@@ -24,6 +24,7 @@ public class ButtonManager : MonoBehaviour
 
    // private UIManager uimanager;
 
+    //
     private void Start()
     {
         initialExitDoorPosition = exitDoor.transform.position;
@@ -54,7 +55,7 @@ public class ButtonManager : MonoBehaviour
         UIManager.instance.ShowVictoryUI();
     }
 
-    public void OnButtonPressed()
+    public virtual void OnButtonPressed()
     {
         // 이미지가 아직 모두 변경되지 않은 경우에만 처리
         if (nextImageIndex < canvasImages.Length)
@@ -64,7 +65,7 @@ public class ButtonManager : MonoBehaviour
         }
     }
 
-    public void OnButtonReleased()
+    public virtual void OnButtonReleased()
     {
         if(nextImageIndex>0)
         {

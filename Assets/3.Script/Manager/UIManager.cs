@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     public GameObject homeUIPanel;
     public GameObject quitUIPanel;
     public GameObject pauseUIPanel;
+    public GameObject M_pauseUIPanel;
    // public GameObject storeUIPanel;
     public GameObject rankingUIPanel;
     public GameObject aboutusUIPanel;
@@ -417,6 +418,14 @@ public class UIManager : MonoBehaviour
     public void OpenGitHubPage()
     {
         Application.OpenURL(githubUrl);
+    }
+
+    public void ShowPausePanel_M()
+    {
+        if(M_pauseUIPanel !=null)
+        {
+            M_pauseUIPanel.SetActive(true);
+        }
     }
 
 }
