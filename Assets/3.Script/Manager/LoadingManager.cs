@@ -15,11 +15,13 @@ public class LoadingManager : MonoBehaviour
     public Slider loadingSlider;
     public TextMeshProUGUI loadingText;
 
+    private bool isFirebaseInitialized = false;
+
+    //
     private int maxRetryCount = 3;
     private int currentRetry = 0;
     private float retryDelay = 2.0f; //재시도 전 대기 시간
-
-    private bool isFirebaseInitialized = false;
+    //
 
     void Start()
     {
@@ -45,45 +47,6 @@ public class LoadingManager : MonoBehaviour
         loadingUI.SetActive(false);
 
         yield return LoadAdditionalData();
-
-       //         if (dependencyTask.Result == DependencyStatus.Available)
-       //         {
-       //         Debug.Log("Firebase dependencies are available.");
-       //
-       //         FirebaseAuthManager.instance.auth = FirebaseAuth.DefaultInstance;
-       //             isFirebaseInitialized = true;
-       //
-       //             SetLoadingProgress(0.5f, "Firebase is being initialized...");
-       //
-       //             yield return LoadAdditionalData();
-       //             break;
-       //         }
-       //         else
-       //     { 
-       //         currentRetry++;
-       //         Debug.Log("초기화에 실패했습니다...: " + dependencyTask.Result + "재시도 횟수: " + currentRetry);
-       //
-       //         if (currentRetry >= maxRetryCount)
-       //         {
-       //             SetLoadingProgress(1.0f, "Initialization failed. Retry limit exceeded...");
-       //             yield break;
-       //
-       //         }
-       //         else
-       //         {
-       //             SetLoadingProgress(0.1f, "Initialization failed. Retrying soon!");
-       //             yield return new WaitForSeconds(retryDelay);
-       //         }
-       //     }
-       // }
-       //
-       // //초기화 완료 후 UI 비활성화
-       // if(isFirebaseInitialized)
-       // {
-       //     yield return new WaitForSeconds(0.5f);
-       //     loadingUI.SetActive(false);
-       // }
-
     }
 
     private void SetLoadingProgress(float progress, string message)

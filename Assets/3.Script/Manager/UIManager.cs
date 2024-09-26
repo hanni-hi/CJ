@@ -107,10 +107,12 @@ public class UIManager : MonoBehaviour
         if (scene.name == "Demo Scene V1(Blue)") // 로비 씬의 이름을 넣으세요
         {
             homeUIPanel.SetActive(true);
+            victoryUIPanel.SetActive(false);
+            gameOverUIPanel.SetActive(false);
             //  // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
             //  InitializeLobbyUI();
-         //  LoadReferencesFromJSON();
-
+            //  LoadReferencesFromJSON();
+            GameManager.instance.ApplyLobbyPostProcessing();
             RemoveDuplicateObjects();
         }
         if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")

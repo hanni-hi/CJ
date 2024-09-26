@@ -13,12 +13,6 @@ public class M_ButtonManager : ButtonManager
 
     //private bool hasPlayerColor = false;
 
-    public void SetPlayerColor(Color color)
-    {
-        playerColor = color;
-        //hasPlayerColor = true;
-    }
-
     public override void OnButtonPressed()
     {
         base.OnButtonPressed();
@@ -32,8 +26,6 @@ foreach(var button in buttons)
                 playerButtonCount++;
             }
         }
-
-
     }
 
     public override void OnButtonReleased()

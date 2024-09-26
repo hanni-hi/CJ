@@ -37,6 +37,21 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public ImageColorControl[] buttonImages;
 
+    public Dictionary<int, int> playerPrefabIndexes = new Dictionary<int, int>();
+
+    [PunRPC]
+    private void RPC_ChangeDuckColor(int duckViewID, float r, float g, float b)
+    {
+        GameObject duckobj = PhotonView.Find(duckViewID).gameObject;
+        MeshRenderer renderer = duckobj.GetComponent<MeshRenderer>();
+
+        if(renderer !=null)
+        {
+            Color newColor = new Color(r,g,b);
+            renderer.material.color = newColor;
+        }
+    }
+
     [PunRPC]
     private void RPC_selectPrefab(int prefabIndex, int actorNum)
     {
@@ -53,18 +68,39 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void RPC_UpdateCanvasImage(int buttonIndex,bool isPressed, Color Pcolor)
+    private void RPC_UpdateCanvasImage(int buttonIndex,bool isPressed, Color Pcolor, int actorNum)
     {
-        canvasImages[buttonIndex].color = isPressed ? Pcolor : Color.gray;
+        //현재 플레이어의 actornumber
+        int localANum = PhotonNetwork.LocalPlayer.ActorNumber;
+        //현재 플레이어의 prefab 인덱스 
+        int localPrefabIndex = playerPrefabIndexes.ContainsKey(localANum) ? playerPrefabIndexes[localANum] : -1;
+        //버튼을 누른 플레이어의 prefab 인덱스 
+        int pressedPrefabIndex = playerPrefabIndexes.ContainsKey(actorNum) ? playerPrefabIndexes[actorNum] : -1;
+
+
+       if(isPressed)
+        {
+            if (localPrefabIndex == pressedPrefabIndex)
+            {
+                canvasImages[buttonIndex].color = Pcolor;
+            }
+            else
+            {
+                Color opponentColor = GetColorByPrefabIndex(pressedPrefabIndex);
+                canvasImages[buttonIndex].color = opponentColor;
+            }
+       }
+       else
+        {
+            canvasImages[buttonIndex].color = Color.gray;
+        }
     }
-
-
 
     public Color GetColorByPrefabIndex(int prefabIndex)
     {
         switch(prefabIndex)
         {
-            case 0: return Color.white;
+            case 0: return Color.yellow;
             case 1: return Color.blue;
             case 2: return Color.red;
             case 3: return Color.black;
@@ -143,8 +179,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         UpdatePlayerCount();
         CheckAndStartGame();
-
-
     }
 
     public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
@@ -194,6 +228,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 prefabIdx = Random.Range(0, availablePrefabs.Count);
                 photonView.RPC("RPC_selectPrefab", RpcTarget.AllBuffered, prefabIdx, PhotonNetwork.LocalPlayer.ActorNumber);
             selectedPrefab = availablePrefabs[prefabIdx];
+            playerPrefabIndexes[PhotonNetwork.LocalPlayer.ActorNumber] = prefabIdx;
         }
             else
             {
@@ -216,7 +251,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                         {
                             prefabIdx = remainingPrefabs[Random.Range(0, remainingPrefabs.Count)];
                             selectedPrefab = availablePrefabs[prefabIdx];
-                        }
+                        playerPrefabIndexes[PhotonNetwork.LocalPlayer.ActorNumber] = prefabIdx;
+                    }
                     }
                 }
             }
@@ -224,27 +260,55 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             //캐릭터 생성
             PhotonNetwork.Instantiate(selectedPrefab.name, points[idx].position, points[idx].rotation, 0);
 
-            M_ButtonManager MBManager = FindObjectOfType<M_ButtonManager>();
-            if(MBManager !=null)
+            foreach(var button in GameObject.FindGameObjectsWithTag("Button"))
+        {
+            ButtonTracker tracker = button.GetComponent<ButtonTracker>();
+            if(tracker!=null)
             {
-                //  buttonManager.SetPlayerColor(GetColorByPrefabIndex(prefabIndex));
-                MBManager.SetPlayerColor(GetColorByPrefabIndex(prefabIdx));
+                tracker.SetPlayerColor(GetColorByPrefabIndex(prefabIdx));
             }
+
+        }
         //타이머
         gameTimer.StartTimer();
     }
 
     public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
-        for(int i=0; i<canvasImages.Length;i++)
+        foreach(var key in propertiesThatChanged.Keys)
         {
-            if (propertiesThatChanged.ContainsKey("Button{i}State"))
+            if(key.ToString().StartsWith("Button")&&key.ToString().EndsWith("State"))
             {
-                bool isPressed = (bool)propertiesThatChanged[$"Button{i}State"];
-                //canvasImages[i].sprite = isPressed ? newSprite : originalSprite;
-                canvasImages[i].color = isPressed ? playerColors[i%playerColors.Length]:Color.gray;
+                //버튼 인덱스 추출
+                int buttonIndex = int.Parse(key.ToString().Substring(6,key.ToString().Length-11));
+                //버튼이 눌렸는지 상태를 가져옴
+                bool ispressed = (bool)propertiesThatChanged[$"Button{buttonIndex}State"];
+                //버튼을 누른 actor의 번호를 가져옴
+                int actorNum = (int)PhotonNetwork.CurrentRoom.CustomProperties[$"Button{buttonIndex}Actor"];
+                //actorNum에 따른 색상 결정
+                int pressedPrefabIndex = playerPrefabIndexes.ContainsKey(actorNum) ? playerPrefabIndexes[actorNum] : -1;
+                Color pColor = GetColorByPrefabIndex(pressedPrefabIndex);
+            
+            if(ispressed)
+                {
+                    canvasImages[buttonIndex].color = pColor;
+                }
+            else
+                {
+                    canvasImages[buttonIndex].color = Color.gray;
+                }
             }
         }
+
+       // for(int i=0; i<canvasImages.Length;i++)
+       // {
+       //     if (propertiesThatChanged.ContainsKey($"Button{i}State"))
+       //     {
+       //         bool isPressed = (bool)propertiesThatChanged[$"Button{i}State"];
+       //         //canvasImages[i].sprite = isPressed ? newSprite : originalSprite;
+       //         canvasImages[i].color = isPressed ? playerColors[i%playerColors.Length]:Color.gray;
+       //     }
+       // }
     }
 
     public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
