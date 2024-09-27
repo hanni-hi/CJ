@@ -8,7 +8,6 @@ using Firebase.Auth;
 using Firebase.Database;
 using System;
 
-
 public class LoadingManager : MonoBehaviour
 {
     public GameObject loadingUI;
@@ -35,18 +34,31 @@ public class LoadingManager : MonoBehaviour
         //10%에서 시작
         SetLoadingProgress(0.1f, "Initializing Firebase...");
 
-        while (!FirebaseAuthManager.instance.IsInitialized())
+        while (!FirebaseAuthManager.instance.IsInitialized() && currentRetry < maxRetryCount)
         {
+            currentRetry++;
             yield return new WaitForSeconds(0.5f); //파이어베이스 초기화 작업이 끝날때까지 기다림
             Debug.Log("초기화 대기중");
         }
-            Debug.Log("초기화 완료");
+
+        if(!FirebaseAuthManager.instance.IsInitialized())
+        {
+            Debug.LogError("초기화 실패했습니다 ㅠㅠ");
+        SetLoadingProgress(0.0f, "Firebase Initialization Failed. Please try again...");
+            if (UIManager.instance != null)
+            {
+               UIManager.instance.lodingErrorUIPanel.SetActive(true);  
+            }
+
+        }
+
+        yield return LoadAdditionalData();
+
             SetLoadingProgress(1.0f, "Initialization completed!");
 
         yield return new WaitForSeconds(0.5f);
         loadingUI.SetActive(false);
 
-        yield return LoadAdditionalData();
     }
 
     private void SetLoadingProgress(float progress, string message)

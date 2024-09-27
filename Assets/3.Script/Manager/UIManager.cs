@@ -33,6 +33,7 @@ public class UIManager : MonoBehaviour
     public GameObject gameOverUIPanel;
     public GameObject victoryUIPanel;
     public GameObject loginUIPanel;
+    public GameObject lodingErrorUIPanel;
 
     public TextMeshProUGUI gameOverTimeText;
     public TextMeshProUGUI victoryTimeText;
@@ -109,6 +110,8 @@ public class UIManager : MonoBehaviour
             homeUIPanel.SetActive(true);
             victoryUIPanel.SetActive(false);
             gameOverUIPanel.SetActive(false);
+            pauseUIPanel.SetActive(false);
+            M_pauseUIPanel.SetActive(false);
             //  // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
             //  InitializeLobbyUI();
             //  LoadReferencesFromJSON();

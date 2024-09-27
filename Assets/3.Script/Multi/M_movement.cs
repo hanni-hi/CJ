@@ -9,6 +9,7 @@ public class M_movement : MonoBehaviour
 {
     private PhotonView pv;
     private CinemachineVirtualCamera vcamera;
+    public AudioListener aulistener;
 
     private Animator anim;
     private CharacterController controller;
@@ -22,12 +23,32 @@ public class M_movement : MonoBehaviour
     void Start()
     {
         pv = GetComponent<PhotonView>();
+        aulistener = GetComponent<AudioListener>();
+
+        if(pv.IsMine)
+        {
+            aulistener.enabled = true;
+        }
+        else
+        {
+            aulistener.enabled = false;
+        }
+
         vcamera = GameObject.FindObjectOfType<CinemachineVirtualCamera>();
+        if (vcamera == null)
+        {
+            Debug.LogError("CinemachineVirtualCamera is not found in the scene.");
+        }
 
         anim = gameObject.GetComponentInChildren<Animator>();
         controller = GetComponent<CharacterController>();
+        if (controller == null)
+        {
+            Debug.LogError("CharacterController is missing from the GameObject.");
+            return; // 할당이 안 된 경우 업데이트를 하지 않도록 반환
+        }
         //자신의 캐릭터일 경우 시네머신 카메라를 연결 
-    if(pv.IsMine)
+        if (pv.IsMine)
         {
             vcamera.Follow = transform;
             vcamera.LookAt = transform;
@@ -41,8 +62,6 @@ public class M_movement : MonoBehaviour
             Move();
         }
     }
-
-    
 
     void Move()
     {

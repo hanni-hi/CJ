@@ -8,6 +8,7 @@ using Firebase;
 using Firebase.Database;
 using Firebase.Auth;
 using Firebase.Unity;
+using System.Threading.Tasks;
 
 /*
 파이어베이스 실시간 데이터베이스와 통신 담당 / 게임에 승리한 시간 / 사용자 이메일 저장 / 랭킹을 불러옴
@@ -22,9 +23,6 @@ public class Firebase_Database : MonoBehaviour
     
     public TextMeshProUGUI[] Rank = new TextMeshProUGUI[7];
     private string[] strRank; //Firebase에서 불러온 랭킹 정보를 임시로 저장하는 배열입니다.
-    private long strLen; //Firebase에서 불러온 데이터의 총 개수입니다.
-
-    string uniqueKey = Guid.NewGuid().ToString();
 
     public GameObject rankingUIpanel;
 
@@ -55,15 +53,6 @@ public class Firebase_Database : MonoBehaviour
             }
         });
     }
-
-   // void LateUpdate()
-   // {
-   //     if(textLoadBool)
-   //     {
-   //         TextLoad();
-   //     }
-   //   //  if (Time.timeScale != 0.0f) Time.timeScale = 0.0f;
-   // }
 
     public void OnRankingUIPanelOpened()
     {
@@ -96,15 +85,34 @@ public class Firebase_Database : MonoBehaviour
         string userEmail = authManager.user.Email;
         string timeFormatted = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(elapsedTime / 60), Mathf.FloorToInt(elapsedTime % 60));
 
-       // int count = (int)Time.time;
+        string uniqueKey = Guid.NewGuid().ToString();
+        // int count = (int)Time.time;
 
-        //firebase에 저장
-        reference.Child("rank").Child(uniqueKey).SetValueAsync(new Dictionary<string, object>
-        { {"email",userEmail },
+        StartCoroutine(SaveVictoryTime(userEmail, timeFormatted, gameName, uniqueKey));
+    }
+
+    private IEnumerator SaveVictoryTime(string userEmail, string timeFormatted, string gameName, string uniqueKey)
+    {
+        var saveTask = reference.Child("rank").Child(uniqueKey).SetValueAsync(new Dictionary<string, object>
+        {
+          {"email",userEmail },
             {"game",gameName },
           {"score",timeFormatted }
 
         });
+
+        yield return new WaitUntil(() => saveTask.IsCompleted);
+
+        if (saveTask.IsFaulted)
+        {
+
+            Debug.LogError("승리 시간 저장 실패: " + saveTask.Exception);
+        }
+        else
+        {
+            Debug.Log("승리 시간이 성공적으로 저장되었습니다.");
+
+        }
     }
 
     //랭킹 데이터 불러오기

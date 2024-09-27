@@ -10,7 +10,6 @@ using TMPro;
 /*
  파이어베이스 인증 / 사용자 로그인 / 로그아웃 / 회원가입 / UI 업데이트 / 사용자 상태 관리
  
- 지금 현재 이 스크립트에서 파이어베이스 초기화가 제대로 안되서 문제가 일어나는 중임
  */
 
 
@@ -51,47 +50,6 @@ public class FirebaseAuthManager : MonoBehaviour
                 originalSprite = loginStateButton.GetComponent<Image>().sprite;
             }
 
-        // Firebase 초기화
-       // FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
-       // {
-       //     if (task.IsCompleted && task.Result == DependencyStatus.Available)
-       //     {
-       //         // Firebase가 초기화된 후 현재 사용자 체크는 메인 스레드에서 실행되어야 함
-       //         UnityMainThreadDispatcher.Instance().Enqueue(() =>
-       //         {
-       //
-       //         Debug.Log("초기화 성공★★★: " + task.Result);
-       //
-       //         // Firebase 초기화가 완료되면 auth 객체 사용 가능
-       //         FirebaseApp app = FirebaseApp.DefaultInstance;
-       //         
-       //             auth = FirebaseAuth.DefaultInstance;
-       //
-       //
-       //             if (FirebaseAuthManager.instance.auth != null)
-       //             {
-       //                 Debug.Log("Auth 초기화 성공");
-       //             }
-       //             else
-       //             {
-       //                 Debug.LogError("Auth 초기화 실패");
-       //             }
-       //
-       //
-       //
-       //
-       //             //  // Firebase 초기화 완료 표시
-       //             isFirebaseInitialized = true;
-       //
-       //             // Firebase가 초기화된 후 현재 사용자 체크
-       //             CheckCurrentUser();
-       //         });
-       //     }
-       //     else
-       //     {
-       //         Debug.LogError("초기화 실패함★★★: " + task.Result);
-       //     }
-       // });
         }
         else
         {

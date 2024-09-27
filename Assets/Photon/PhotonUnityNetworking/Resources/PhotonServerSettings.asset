@@ -44,6 +44,7 @@ MonoBehaviour:
   - RPC_ChangeDuckPrefab
   - RPC_ChangeDuck
   - RPC_ChangeDuckColor
+  - RPC_UpdateUsedChoices
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

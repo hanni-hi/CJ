@@ -10,6 +10,7 @@ public class ButtonTracker : MonoBehaviour
     private Button_Script bscript;
     private PhotonManager PTmanager;
     private M_Duckschanger MDchanger;
+    private DuckInteraction dinteraction;
 
     public Image linkedUISprite;
     private Color buttonOwnerColor = Color.gray;
@@ -18,7 +19,6 @@ public class ButtonTracker : MonoBehaviour
 
     void Start()
     {
-
         bscript = GetComponent<Button_Script>();
 
         if (bscript == null)
@@ -115,37 +115,52 @@ public class ButtonTracker : MonoBehaviour
     {
         if (other.CompareTag("Ducks"))
         {
-            PhotonView dview = other.GetComponent<PhotonView>();
-            if (dview != null && dview.Owner != null)
+            dinteraction = other.GetComponent<DuckInteraction>();
+
+            if(dinteraction !=null)
             {
-                int actNum = dview.Owner.ActorNumber;
-                Color pColor = PTmanager.GetColorByPrefabIndex(PTmanager.playerPrefabIndexes[actNum]);
-
-                linkedUISprite.color = pColor;
-                DuckCChange(dview.gameObject, pColor);
-
+                dinteraction.HandleDuckOnButton();
             }
+
+           // PhotonView dview = other.GetComponent<PhotonView>();
+           // if (dview != null && dview.Owner != null)
+           // {
+           //     int actNum = dview.Owner.ActorNumber;
+           //     Color pColor = PTmanager.GetColorByPrefabIndex(PTmanager.playerPrefabIndexes[actNum]);
+           //
+           //     linkedUISprite.color = pColor;
+           //     DuckCChange(dview.gameObject, pColor);
+           // }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Ducks"))
-            linkedUISprite.color = Color.gray;
-
-        PhotonView dview = other.GetComponent<PhotonView>();
-        if (dview != null)
         {
-            DuckCChange(dview.gameObject, Color.gray);
+            Debug.Log("¿À¸® ¤³¤·");
+            dinteraction = other.GetComponent<DuckInteraction>();
+
+            if (dinteraction != null)
+            {
+                dinteraction.ResetDuckColor();
+            }
+            linkedUISprite.color = Color.gray;
         }
+
+       // PhotonView dview = other.GetComponent<PhotonView>();
+       // if (dview != null)
+       // {
+       //     DuckCChange(dview.gameObject, Color.gray);
+       // }
     }
 
-    private void DuckCChange(GameObject dobj,Color color)
-        {
-        PhotonView dptview = dobj.GetComponent<PhotonView>();
-        if(dptview !=null)
-        {
-            PTmanager.photonView.RPC("RPC_ChangeDuckColor",RpcTarget.AllBuffered,dptview.ViewID,color.r,color.g,color.b);
-        }
-        }
+   // private void DuckCChange(GameObject dobj,Color color)
+   //     {
+   //     PhotonView dptview = dobj.GetComponent<PhotonView>();
+   //     if(dptview !=null)
+   //     {
+   //         PTmanager.photonView.RPC("RPC_ChangeDuckColor",RpcTarget.AllBuffered,dptview.ViewID,color.r,color.g,color.b);
+   //     }
+   //     }
 }
