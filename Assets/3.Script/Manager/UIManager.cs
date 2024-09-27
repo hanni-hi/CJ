@@ -43,6 +43,7 @@ public class UIManager : MonoBehaviour
     public Toggle start3;
 
     private GameTimer gameTimer;
+    private Timer timer;
     //private bool isPaused = false;
     private string selectedSceneName; //선택된 씬의 이름이 저장될 변수
     private GameObject selectedButton; //현재 선택된 맵 버튼을 저장함
@@ -124,10 +125,6 @@ public class UIManager : MonoBehaviour
             StartCoroutine(CheckFirebaseInitializedAtStart());
 
             gameTimer = FindObjectOfType<GameTimer>();
-            if (gameTimer == null)
-            {
-                Debug.LogError("GameTimer를 찾을 수 없습니다. 타이머가 초기화되지 않았습니다.");
-            }
             AssignHeartImages();
         }
         if (scene.name == "SciFi_Warehouse_M")
@@ -135,11 +132,7 @@ public class UIManager : MonoBehaviour
             homeUIPanel.SetActive(false);
             StartCoroutine(CheckFirebaseInitializedAtStart());
 
-            gameTimer = FindObjectOfType<GameTimer>();
-            if (gameTimer == null)
-            {
-                Debug.LogError("GameTimer를 찾을 수 없습니다. 타이머가 초기화되지 않았습니다.");
-            }
+           // timer = FindObjectOfType<Timer>();
             AssignHeartImages();
         }
     }

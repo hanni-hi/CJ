@@ -9,7 +9,7 @@ public class M_ButtonManager : ButtonManager
     private int nextimgIndex = 0;
     private int playerButtonCount = 0;
 
-    private Color playerColor = Color.gray; // 기본 색상
+    private Color playerColor = Color.white; // 기본 색상
 
     //private bool hasPlayerColor = false;
 
@@ -35,7 +35,7 @@ foreach(var button in buttons)
         if (nextimgIndex > 0)
             nextimgIndex--;
         canvasImages[nextimgIndex].sprite = originalSprite;
-        canvasImages[nextimgIndex].color = Color.gray;
+        canvasImages[nextimgIndex].color = Color.white;
 
     }
 }

@@ -13,7 +13,7 @@ public class ButtonTracker : MonoBehaviour
     private DuckInteraction dinteraction;
 
     public Image linkedUISprite;
-    private Color buttonOwnerColor = Color.gray;
+    private Color buttonOwnerColor = Color.white;
 
     private bool isTracked = false;
 
@@ -54,7 +54,7 @@ public class ButtonTracker : MonoBehaviour
     }
 
     // 버튼이 눌렸을 때 호출되는 메서드
-    public void OnButtonPushed(Collision other)
+    public void OnButtonPushed(Collider other)
     {
         int buttonIndex = GetButtonIndex();
         int actorNum = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -102,6 +102,8 @@ public class ButtonTracker : MonoBehaviour
             int pfIndex = PTmanager.playerPrefabIndexes[actorNum];
             Color pcolor = PTmanager.GetColorByPrefabIndex(pfIndex);
 
+            Debug.Log($"버튼 상태 업데이트 시도: Index {buttonIndex}, Pressed: {isPressed}, ActorNum: {actorNum}, Color: {pcolor}");
+
             ExitGames.Client.Photon.Hashtable buttonState = new ExitGames.Client.Photon.Hashtable();
             buttonState[$"Button{buttonIndex}State"] = isPressed;
             buttonState[$"Button{buttonIndex}Actor"] = actorNum;
@@ -109,10 +111,16 @@ public class ButtonTracker : MonoBehaviour
 
             PTmanager.photonView.RPC("RPC_UpdateCanvasImage", RpcTarget.All, buttonIndex, isPressed, pcolor, actorNum);
         }
+
+        else
+        {
+            Debug.LogError("PhotonManager가 존재하지 않습니다.");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("버튼과 충돌 시도");
         if (other.CompareTag("Ducks"))
         {
             dinteraction = other.GetComponent<DuckInteraction>();
@@ -120,6 +128,7 @@ public class ButtonTracker : MonoBehaviour
             if(dinteraction !=null)
             {
                 dinteraction.HandleDuckOnButton();
+                OnButtonPushed(other);
             }
 
            // PhotonView dview = other.GetComponent<PhotonView>();
@@ -145,7 +154,7 @@ public class ButtonTracker : MonoBehaviour
             {
                 dinteraction.ResetDuckColor();
             }
-            linkedUISprite.color = Color.gray;
+            linkedUISprite.color = Color.white;
         }
 
        // PhotonView dview = other.GetComponent<PhotonView>();

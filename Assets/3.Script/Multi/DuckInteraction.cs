@@ -20,12 +20,11 @@ public class DuckInteraction : MonoBehaviour
         if(other.CompareTag("Player"))
         {
             PhotonView playerView = other.GetComponent<PhotonView>();
-            if(playerView !=null&&playerView.Owner !=null)
+            if(playerView !=null)
             {
                 lastPlayerActorNum = playerView.Owner.ActorNumber;
                 Debug.Log($"오리가 플레이어 {lastPlayerActorNum}와 충돌했습니다.");
             }
-
         }
     }
 
@@ -36,20 +35,25 @@ public class DuckInteraction : MonoBehaviour
             int playerPrefabIndex = ptManager.playerPrefabIndexes[lastPlayerActorNum];
             Color playerColor = ptManager.GetColorByPrefabIndex(playerPrefabIndex);
 
-            ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,playerColor.r,playerColor.g,playerColor.b);
+            Debug.Log($"오리 색상 변경 시도: {playerColor}");
+
+            ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,playerColor);
+        }
+        else
+        {
+            Debug.LogError("lastPlayerActorNum이 유효하지 않거나 ptManager에서 해당 플레이어를 찾을 수 없습니다.");
         }
     }
 
     public void ResetDuckColor()
     {
-        ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,Color.gray.r, Color.gray.g, Color.gray.b);
+        ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,Color.yellow);
     }
 
 
     [PunRPC]
-    private void RPC_ChangeDuckColor(float r, float g, float b)
+    private void RPC_ChangeDuckColor(Color newColor)
     {
-        Color newColor = new Color(r,g,b);
         MeshRenderer renderer = GetComponent<MeshRenderer>();
 
         if(renderer !=null)

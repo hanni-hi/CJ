@@ -102,7 +102,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
        }
        else
         {
-            canvasImages[buttonIndex].color = Color.gray;
+            canvasImages[buttonIndex].color = Color.white;
         }
     }
 
@@ -115,7 +115,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             case 2: return Color.red;
             case 3: return Color.black;
             case 4: return new Color(0.5f,0,0.5f); //º¸¶ó»ö
-            default: return Color.gray;
+            default: return Color.white;
         }
     }
 
@@ -329,20 +329,20 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 }
             else
                 {
-                    canvasImages[buttonIndex].color = Color.gray;
+                    canvasImages[buttonIndex].color = Color.white;
                 }
             }
         }
 
-       // for(int i=0; i<canvasImages.Length;i++)
-       // {
-       //     if (propertiesThatChanged.ContainsKey($"Button{i}State"))
-       //     {
-       //         bool isPressed = (bool)propertiesThatChanged[$"Button{i}State"];
-       //         //canvasImages[i].sprite = isPressed ? newSprite : originalSprite;
-       //         canvasImages[i].color = isPressed ? playerColors[i%playerColors.Length]:Color.gray;
-       //     }
-       // }
+        for(int i=0; i<canvasImages.Length;i++)
+        {
+            if (propertiesThatChanged.ContainsKey($"Button{i}State"))
+            {
+                bool isPressed = (bool)propertiesThatChanged[$"Button{i}State"];
+                //canvasImages[i].sprite = isPressed ? newSprite : originalSprite;
+                canvasImages[i].color = isPressed ? playerColors[i%playerColors.Length]:Color.white;
+            }
+        }
     }
 
     public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
