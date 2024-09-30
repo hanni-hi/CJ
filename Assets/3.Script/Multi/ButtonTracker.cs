@@ -7,45 +7,77 @@ using Photon.Realtime;
 
 public class ButtonTracker : MonoBehaviour
 {
-    private Button_Script bscript;
     private PhotonManager PTmanager;
     private M_Duckschanger MDchanger;
     private DuckInteraction dinteraction;
 
+    public GameObject connectedD;
+    public Transform buttontop;
+    public float moveSpeed = 3f;
+    public float downDistance = 0.3f;
+    public float upDistance = 3.5f;
+
+    private Vector3 initialBPosition;
+    private Vector3 initialDPosition;
+
+
     public Image linkedUISprite;
     private Color buttonOwnerColor = Color.white;
+
+    private Color BOwnColor1= Color.white;
+    private Color BOwnColor2= Color.white;
+    private int buttonIndex;
 
     private bool isTracked = false;
 
     void Start()
     {
-        bscript = GetComponent<Button_Script>();
-
-        if (bscript == null)
-        {
-            Debug.LogError("Button_Script를 찾을 수 없습니다.");
-        }
-
         PTmanager = FindObjectOfType<PhotonManager>();
         if (PTmanager == null)
         {
             Debug.LogError("PhotonManager를 찾을 수 없습니다.");
         }
+
+        initialBPosition = buttontop.localPosition;
+        initialDPosition = connectedD.transform.position;
+
+       // buttonIndex = GetButtonIndex();
+
     }
 
     void Update()
     {
-        if (bscript.isPushed && !isTracked)
-        {
-            linkedUISprite.color = buttonOwnerColor;
+       // if (!isTracked)
+       // {
+       //     linkedUISprite.color = buttonOwnerColor;
+       //
+       //     isTracked = true;
+       // }
 
-            isTracked = true;
+        if(isTracked)
+        {
+            Vector3 DtargetPosition = initialDPosition + new Vector3(0, upDistance, 0);
+            connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position, DtargetPosition, moveSpeed * Time.deltaTime);
+
+            Vector3 BtargetPosition = initialBPosition + new Vector3(0, -downDistance, 0);
+            buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, BtargetPosition, moveSpeed * Time.deltaTime);
+
+        }
+        else
+        {
+            connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position,initialDPosition,moveSpeed*Time.deltaTime);
+            buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, initialBPosition, moveSpeed * Time.deltaTime);
+
+            linkedUISprite.color = Color.white;
         }
     }
 
-    public void SetPlayerColor(Color color)
+    public void SetPlayerColor(Color PColor1, Color PColor2)
     {
-        buttonOwnerColor = color;
+        BOwnColor1 = PColor1;
+        BOwnColor2 = PColor2;
+
+       // buttonOwnerColor = color;
     }
 
     public bool IsButtonPressedByPlayer()
@@ -54,62 +86,64 @@ public class ButtonTracker : MonoBehaviour
     }
 
     // 버튼이 눌렸을 때 호출되는 메서드
-    public void OnButtonPushed(Collider other)
-    {
-        int buttonIndex = GetButtonIndex();
-        int actorNum = PhotonNetwork.LocalPlayer.ActorNumber;
-
-        if (PTmanager != null)
-        {
-            UpdateButtonState(buttonIndex, true, actorNum);
-        }
-        else
-        {
-            Debug.LogError("PhotonManager가 존재하지 않습니다.");
-        }
-
-        UpdateButtonState(buttonIndex, true, actorNum);
-    }
-
-    // 버튼이 해제됐을 때 호출되는 메서드
-    public void OnButtonReleased(Collision other)
-    {
-        int buttonIndex = GetButtonIndex();
-        int actorNum = PhotonNetwork.LocalPlayer.ActorNumber;
-
-        if (PTmanager != null)
-        {
-            UpdateButtonState(buttonIndex, false, actorNum);
-        }
-        else
-        {
-            Debug.LogError("PhotonManager가 존재하지 않습니다.");
-        }
-
-        UpdateButtonState(buttonIndex, false, PhotonNetwork.LocalPlayer.ActorNumber);
-    }
+   // public void OnButtonPushed(Collider other)
+   // {
+   //     int buttonIndex = GetButtonIndex();
+   //     int actorNum = PhotonNetwork.LocalPlayer.ActorNumber;
+   //
+   //     if (PTmanager != null)
+   //     {
+   //         UpdateButtonState(true, actorNum);
+   //     }
+   //     else
+   //     {
+   //         Debug.LogError("PhotonManager가 존재하지 않습니다.");
+   //     }
+   //
+   //     UpdateButtonState(true, actorNum);
+   // }
+   //
+   // // 버튼이 해제됐을 때 호출되는 메서드
+   // public void OnButtonReleased(Collision other)
+   // {
+   //     int buttonIndex = GetButtonIndex();
+   //     int actorNum = PhotonNetwork.LocalPlayer.ActorNumber;
+   //
+   //     if (PTmanager != null)
+   //     {
+   //         UpdateButtonState(false, actorNum);
+   //     }
+   //     else
+   //     {
+   //         Debug.LogError("PhotonManager가 존재하지 않습니다.");
+   //     }
+   //
+   //     UpdateButtonState(false, PhotonNetwork.LocalPlayer.ActorNumber);
+   // }
 
     private int GetButtonIndex()
     {
         Button_Script[] buttons = FindObjectsOfType<Button_Script>();
-        return System.Array.IndexOf(buttons, bscript);
+        return System.Array.IndexOf(buttons, this);
     }
 
-    private void UpdateButtonState(int buttonIndex, bool isPressed, int actorNum)
+    private void UpdateButtonState(bool isPressed, int actorNum)
     {
         if (PTmanager != null)
         {
-            int pfIndex = PTmanager.playerPrefabIndexes[actorNum];
-            Color pcolor = PTmanager.GetColorByPrefabIndex(pfIndex);
+          //  int pfIndex = PTmanager.playerPrefabIndexes[actorNum];
+             Color pcolor = PTmanager.GetColorByPrefabIndex(PTmanager.playerPrefabIndexes[actorNum]);
 
-            Debug.Log($"버튼 상태 업데이트 시도: Index {buttonIndex}, Pressed: {isPressed}, ActorNum: {actorNum}, Color: {pcolor}");
 
-            ExitGames.Client.Photon.Hashtable buttonState = new ExitGames.Client.Photon.Hashtable();
-            buttonState[$"Button{buttonIndex}State"] = isPressed;
-            buttonState[$"Button{buttonIndex}Actor"] = actorNum;
-            PhotonNetwork.CurrentRoom.SetCustomProperties(buttonState);
+          //
+             Debug.Log($"버튼 상태 업데이트 시도: Index {buttonIndex}, Pressed: {isPressed}, ActorNum: {actorNum}, Color: {pcolor}");
+          //
+          //  ExitGames.Client.Photon.Hashtable buttonState = new ExitGames.Client.Photon.Hashtable();
+          //  buttonState[$"Button{buttonIndex}State"] = isPressed;
+          //  buttonState[$"Button{buttonIndex}Actor"] = actorNum;
+          //  PhotonNetwork.CurrentRoom.SetCustomProperties(buttonState);
 
-            PTmanager.photonView.RPC("RPC_UpdateCanvasImage", RpcTarget.All, buttonIndex, isPressed, pcolor, actorNum);
+            PTmanager.photonView.RPC("RPC_UpdateCanvasImage", RpcTarget.All, GetButtonIndex(), isPressed, actorNum,pcolor);
         }
 
         else
@@ -118,17 +152,20 @@ public class ButtonTracker : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collider other)
     {
         Debug.Log("버튼과 충돌 시도");
-        if (other.CompareTag("Ducks"))
+        if (other.CompareTag("Ducks")&&!isTracked)
         {
+            isTracked = true;
             dinteraction = other.GetComponent<DuckInteraction>();
 
             if(dinteraction !=null)
             {
                 dinteraction.HandleDuckOnButton();
-                OnButtonPushed(other);
+                // OnButtonPushed(other);
+
+                UpdateButtonState(true,PhotonNetwork.LocalPlayer.ActorNumber);
             }
 
            // PhotonView dview = other.GetComponent<PhotonView>();
@@ -143,18 +180,22 @@ public class ButtonTracker : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnCollisionExit(Collider other)
     {
-        if (other.CompareTag("Ducks"))
+        if (other.CompareTag("Ducks")&&isTracked)
         {
+            isTracked = false;
             Debug.Log("오리 ㅃㅇ");
             dinteraction = other.GetComponent<DuckInteraction>();
 
             if (dinteraction != null)
             {
                 dinteraction.ResetDuckColor();
+               // OnButtonReleased(null);
             }
-            linkedUISprite.color = Color.white;
+            // linkedUISprite.color = Color.white;
+
+            UpdateButtonState(false,PhotonNetwork.LocalPlayer.ActorNumber);
         }
 
        // PhotonView dview = other.GetComponent<PhotonView>();

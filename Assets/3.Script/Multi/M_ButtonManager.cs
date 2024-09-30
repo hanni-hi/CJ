@@ -10,6 +10,8 @@ public class M_ButtonManager : ButtonManager
     private int playerButtonCount = 0;
 
     private Color playerColor = Color.white; // 기본 색상
+    private Color player1Color = Color.white; // 기본 색상
+    private Color player2Color = Color.white; // 기본 색상
 
     //private bool hasPlayerColor = false;
 
@@ -22,7 +24,7 @@ foreach(var button in buttons)
             ButtonTracker tracker = button.GetComponent<ButtonTracker>();
             if(tracker !=null&&!tracker.IsButtonPressedByPlayer())
             {
-                tracker.SetPlayerColor(playerColor);
+                tracker.SetPlayerColor(player1Color, player2Color);
                 playerButtonCount++;
             }
         }

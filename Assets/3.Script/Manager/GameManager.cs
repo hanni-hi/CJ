@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.PostProcessing;
+using Photon.Pun;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager instance = null;
 
@@ -26,7 +27,7 @@ public class GameManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
 
-            DontDestroyOnLoad(gameOverUI);
+           // DontDestroyOnLoad(gameOverUI);
         }
         else
         {
@@ -93,6 +94,9 @@ public class GameManager : MonoBehaviour
         UIManager.instance.ShowPauseMenu();
         ApplyPausePostProcessing();
         isPaused = true;
+
+        // Notify other players
+        PhotonManager.instance.photonView.RPC("RPC_PauseGame", RpcTarget.Others);
     }
 
     public void ResumeGame()
@@ -101,6 +105,9 @@ public class GameManager : MonoBehaviour
         UIManager.instance.HidePauseMenu();
         ResetPostProcessing();
         isPaused = false;
+
+        // Notify other players
+        PhotonManager.instance.photonView.RPC("RPC_ResumeGame", RpcTarget.Others);
     }
 
     private void ApplyGameOverPostProcessing()

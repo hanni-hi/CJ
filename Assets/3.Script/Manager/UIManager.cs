@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.IO;
+using Photon.Pun;
 
 public class UIManager : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class UIManager : MonoBehaviour
     public GameObject homeUIPanel;
     public GameObject quitUIPanel;
     public GameObject pauseUIPanel;
-    public GameObject M_pauseUIPanel;
+    public GameObject M_pauseUIPanel;// 친구 한명이 나갔을때
    // public GameObject storeUIPanel;
     public GameObject rankingUIPanel;
     public GameObject aboutusUIPanel;
@@ -43,6 +44,7 @@ public class UIManager : MonoBehaviour
     public Toggle start3;
 
     private GameTimer gameTimer;
+    private PhotonManager photonmanager;
     private Timer timer;
     //private bool isPaused = false;
     private string selectedSceneName; //선택된 씬의 이름이 저장될 변수
@@ -76,6 +78,11 @@ public class UIManager : MonoBehaviour
         {
             DontDestroyOnLoad(gameObject);
         }
+    }
+
+    private void Start()
+    {
+        photonmanager = FindObjectOfType<PhotonManager>();
     }
 
     private void OnEnable()
@@ -193,7 +200,9 @@ public class UIManager : MonoBehaviour
 
     public void HidePauseMenu()
     {
+        Debug.Log("HidePauseMenu()");
         pauseUIPanel.SetActive(false);
+        photonmanager.M_PauseUI.SetActive(false);
         Time.timeScale = 1f;
       //  isPaused = false;
     }
@@ -224,6 +233,19 @@ public class UIManager : MonoBehaviour
     public void LoadLobby()
     {
        Time.timeScale = 1f;
+
+        if(SceneManager.GetActiveScene().name== "SciFi_Warehouse_M")
+        {
+            if (PhotonNetwork.InRoom)
+            {
+                PhotonNetwork.LeaveRoom(false);
+            }
+            if (PhotonNetwork.InLobby)
+            {
+                PhotonNetwork.LeaveLobby();
+            }
+        }
+
         SceneManager.LoadScene("Demo Scene V1(Blue)");
     }
 
@@ -382,6 +404,7 @@ public class UIManager : MonoBehaviour
             start3.isOn = false;
         }
         else
+
         {
             start1.isOn = false;
             start2.isOn = false;
@@ -425,5 +448,13 @@ public class UIManager : MonoBehaviour
             M_pauseUIPanel.SetActive(true);
         }
     }
+
+  //  public void OnResumeButtonClicked()
+  //  {
+  //      if (SceneManager.GetActiveScene().name== "SciFi_Warehouse_M" && Time.timeScale == 0 && UIManager.instance.pauseUIPanel.activeInHierarchy)
+  //      {
+  //          photonmanager.photonView.RPC("RPC_ResumeGame", RpcTarget.Others);
+  //      }
+  //  }
 
 }
