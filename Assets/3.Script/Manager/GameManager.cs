@@ -47,7 +47,13 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (PhotonManager.instance.M_PauseUI.activeInHierarchy)
+        {
+            return;  // ESC 입력 차단
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
             if(isPaused)
             {
