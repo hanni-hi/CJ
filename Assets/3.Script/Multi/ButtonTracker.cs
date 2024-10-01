@@ -41,35 +41,39 @@ public class ButtonTracker : MonoBehaviour
         initialBPosition = buttontop.localPosition;
         initialDPosition = connectedD.transform.position;
 
-       // buttonIndex = GetButtonIndex();
+        // buttonIndex = GetButtonIndex();
+
+        // connectedD가 null이 아닌 경우에만 초기 위치를 설정
+        if (connectedD != null)
+        {
+            initialDPosition = connectedD.transform.position;
+        }
 
     }
 
     void Update()
     {
-       // if (!isTracked)
-       // {
-       //     linkedUISprite.color = buttonOwnerColor;
-       //
-       //     isTracked = true;
-       // }
-
         if(isTracked)
         {
-            Vector3 DtargetPosition = initialDPosition + new Vector3(0, upDistance, 0);
-            connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position, DtargetPosition, moveSpeed * Time.deltaTime);
+            if (connectedD != null)  // connectedD가 있는 경우에만 오리 움직임 처리
+            {
+                Vector3 DtargetPosition = initialDPosition + new Vector3(0, upDistance, 0);
+                connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position, DtargetPosition, moveSpeed * Time.deltaTime);
 
-            Vector3 BtargetPosition = initialBPosition + new Vector3(0, -downDistance, 0);
-            buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, BtargetPosition, moveSpeed * Time.deltaTime);
-
+                Vector3 BtargetPosition = initialBPosition + new Vector3(0, -downDistance, 0);
+                buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, BtargetPosition, moveSpeed * Time.deltaTime);
+            }
         }
         else
         {
-            connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position,initialDPosition,moveSpeed*Time.deltaTime);
-            buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, initialBPosition, moveSpeed * Time.deltaTime);
+            if (connectedD != null)  // connectedD가 있는 경우에만 오리 움직임 처리
+            {
+                connectedD.transform.position = Vector3.MoveTowards(connectedD.transform.position, initialDPosition, moveSpeed * Time.deltaTime);
+                buttontop.localPosition = Vector3.MoveTowards(buttontop.localPosition, initialBPosition, moveSpeed * Time.deltaTime);
 
-            linkedUISprite.color = Color.white;
-        }
+                linkedUISprite.color = Color.white;
+            }
+            }
     }
 
     public void SetPlayerColor(Color PColor1, Color PColor2)
@@ -152,13 +156,13 @@ public class ButtonTracker : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
         Debug.Log("버튼과 충돌 시도");
-        if (other.CompareTag("Ducks")&&!isTracked)
+        if (other.gameObject.CompareTag("Ducks")&&!isTracked)
         {
             isTracked = true;
-            dinteraction = other.GetComponent<DuckInteraction>();
+            dinteraction = other.gameObject.GetComponent<DuckInteraction>();
 
             if(dinteraction !=null)
             {
@@ -180,13 +184,13 @@ public class ButtonTracker : MonoBehaviour
         }
     }
 
-    private void OnCollisionExit(Collider other)
+    private void OnCollisionExit(Collision other)
     {
-        if (other.CompareTag("Ducks")&&isTracked)
+        if (other.gameObject.CompareTag("Ducks")&&isTracked)
         {
             isTracked = false;
             Debug.Log("오리 ㅃㅇ");
-            dinteraction = other.GetComponent<DuckInteraction>();
+            dinteraction = other.gameObject.GetComponent<DuckInteraction>();
 
             if (dinteraction != null)
             {

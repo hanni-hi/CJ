@@ -407,65 +407,36 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             Debug.Log("나는 마스터 클라이언트! ");
             prefabIdx = Random.Range(0, availablePrefabs.Count);
             spawnPointIdx = Random.Range(1, points.Length);
-            selectedPrefab = availablePrefabs[prefabIdx];
-
-            //선택된 프리팹과 포인트 기록
-            usedPrefab.Add(prefabIdx);
-            usedSpawnPoints.Add(spawnPointIdx);
+           // selectedPrefab = availablePrefabs[prefabIdx];
 
             //마스터 클라이언트가 선택한 프리팹을 딕셔너리에 저장
             playerPrefabIndexes[PhotonNetwork.LocalPlayer.ActorNumber] = prefabIdx;
 
             //선택된 프리팹과 스폰 포인트 정보를 모든 클라이언트에게 전송
             photonView.RPC("RPC_selectPrefab", RpcTarget.All, prefabIdx, spawnPointIdx, PhotonNetwork.LocalPlayer.ActorNumber);
+            yield return new WaitForSeconds(1f);
         }
         else
         {
-            // 두 번째 플레이어가 남은 선택지에서만 선택할 수 있도록 제한
-            while (prefabIdx == -1 || spawnPointIdx == -1)
+            do
             {
-                yield return null;
+                yield return new WaitForSeconds(1f);
 
-                List<int> remainingPrefabs = new List<int>();
-                List<int> remainingSpawnPoints = new List<int>();
+                prefabIdx = Random.Range(0, availablePrefabs.Count);
+                spawnPointIdx = Random.Range(1, points.Length);
 
-                // 남은 프리팹을 선택지에 추가
-                for (int i = 0; i < availablePrefabs.Count; i++)
-                {
-                    if (!usedPrefab.Contains(i))
-                    {
-                        remainingPrefabs.Add(i);
-                    }
-                }
-
-                // 남은 스폰 포인트를 선택지에 추가
-                for (int i = 1; i < points.Length; i++)
-                {
-                    if (!usedSpawnPoints.Contains(i))
-                    {
-                        remainingSpawnPoints.Add(i);
-                    }
-                }
-                // 남은 프리팹과 스폰 포인트에서 무작위로 선택
-                if (remainingPrefabs.Count > 0 && remainingSpawnPoints.Count > 0)
-                {
-                    prefabIdx = remainingPrefabs[Random.Range(0, remainingPrefabs.Count)];
-                    spawnPointIdx = remainingSpawnPoints[Random.Range(0, remainingSpawnPoints.Count)];
-
-
-                    selectedPrefab = availablePrefabs[prefabIdx];
-                    playerPrefabIndexes[PhotonNetwork.LocalPlayer.ActorNumber] = prefabIdx;
-
-                    //   usedPrefab.Add(prefabIdx);
-                    //   usedSpawnPoints.Add(spawnPointIdx);
-
-                    // 선택된 프리팹과 스폰 포인트를 모든 클라이언트에게 전송
-                    photonView.RPC("RPC_selectPrefab", RpcTarget.All, prefabIdx, spawnPointIdx, PhotonNetwork.LocalPlayer.ActorNumber);
-                }
+                Debug.Log($"Client tries prefabIdx: {prefabIdx}, spawnPointIdx: {spawnPointIdx}");
             }
+            while( prefabIdx==playerPrefabIndexes[PhotonNetwork.MasterClient.ActorNumber]
+                    ||spawnPointIdx==playerPrefabIndexes[PhotonNetwork.MasterClient.ActorNumber]);
 
+            playerPrefabIndexes[PhotonNetwork.LocalPlayer.ActorNumber] = prefabIdx;
+
+            // 선택된 프리팹과 스폰 포인트를 모든 클라이언트에게 전송
+            photonView.RPC("RPC_selectPrefab", RpcTarget.All, prefabIdx, spawnPointIdx, PhotonNetwork.LocalPlayer.ActorNumber);
         }
 
+        selectedPrefab = availablePrefabs[prefabIdx];
         //캐릭터 생성
         PhotonNetwork.Instantiate(selectedPrefab.name, points[spawnPointIdx].position, points[spawnPointIdx].rotation, 0);
 
