@@ -32,6 +32,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public GameObject lobbyUI;
     public GameObject errorUI;
     public GameObject M_PauseUI;
+    public GameObject MVictoryUI;
+    public GameObject MLoseUI;
+    public GameObject MDrawUI;
+
     public TextMeshProUGUI playerCountText;
     public Timer gameTimer;
     public Camera lobbyCamera;
@@ -48,10 +52,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     private List<int> usedSpawnPoints = new List<int>();
     private List<RoomInfo> availableRooms = new List<RoomInfo>(); //방 목록을 저장할 리스트
 
-    public ImageColorControl[] buttonImages;
-
     public Dictionary<int, int> playerPrefabIndexes = new Dictionary<int, int>();
-
+    public Dictionary<int, int> playerButtonCount = new Dictionary<int, int>();
 
     [PunRPC]
     public void RPC_PauseGame()
@@ -125,44 +127,14 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             return;
         }
 
-       // //현재 플레이어의 actornumber
-       // int localANum = PhotonNetwork.LocalPlayer.ActorNumber;
-       // //현재 플레이어의 prefab 인덱스 
-       // int localPrefabIndex = playerPrefabIndexes.ContainsKey(localANum) ? playerPrefabIndexes[localANum] : -1;
-       // //버튼을 누른 플레이어의 prefab 인덱스 
-       // int pressedPrefabIndex = playerPrefabIndexes.ContainsKey(actorNum) ? playerPrefabIndexes[actorNum] : -1;
-       //
-       // Color playerColor = GetColorByPrefabIndex(playerPrefabIndexes[actorNum]); //각자 자기정보를 업데이트 중인거같다. 
-
-      //  Color p1Color = GetColorByPrefabIndex(1);
-      //  Color p2Color = GetColorByPrefabIndex(2);
-
         if (isPressed)
         {
-            //if (localPrefabIndex == pressedPrefabIndex)
-            //{
-            //    canvasImages[buttonIndex].color = Pcolor;
-            //}
-            //else
-            //{
-            //    Color opponentColor = GetColorByPrefabIndex(pressedPrefabIndex);
-            //    canvasImages[buttonIndex].color = opponentColor;
-            //}
-
-            // if(actorNum==1)
-            // {
-            //     canvasImages[buttonIndex].color = p1Color;
-            // }
-            // else if(actorNum==2)
-            // {
-            //     canvasImages[buttonIndex].color = p2Color;
-            // }
-
-            // 버튼이 눌렸을 때 해당 플레이어의 색상으로 변경
+            Debug.Log("스프라이트 변경합니다! ");
             canvasImages[buttonIndex].color = playercolor;
         }
         else
         {
+            Debug.Log("스프라이트를 복구합니다! ");
             canvasImages[buttonIndex].color = Color.white;
         }
     }
@@ -508,6 +480,73 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnLeftRoom()
     {
         Debug.Log("방에서 나갔습니다.");
+    }
+
+    public void IncrementButtonCount(int actorNum)
+    {
+        if (playerButtonCount.ContainsKey(actorNum))
+            playerButtonCount[actorNum]++;
+        else
+            playerButtonCount[actorNum] = 1;
+    }
+
+    public void ShowButtonCount()
+    {
+        foreach(var player in playerButtonCount)
+        {
+            Debug.Log($"플레이어 {player.Key} 는 {player.Value} 개 버튼을 눌렀습니다! ");
+        }
+    }
+
+    public void EndMGame()
+    {
+        int player1count = playerButtonCount.ContainsKey(1) ? playerButtonCount[1] : 0;
+        int player2count = playerButtonCount.ContainsKey(2) ? playerButtonCount[2] : 0;
+
+        if(player1count>player2count)
+        {
+            ShowVictoryUI(1);
+            ShowLoseUI(2);
+        }
+        else if(player1count<player2count)
+        {
+            ShowVictoryUI(2);
+            ShowLoseUI(1);
+        }
+        else
+        {
+            ShowDrawUI();
+        }
+    }
+
+    private void ShowVictoryUI(int playerNum)
+    {
+        MVictoryUI.SetActive(true);
+
+        StartCoroutine(TransitionToLobby(MVictoryUI));
+    }
+
+    private void ShowLoseUI(int playerNum)
+    {
+        MLoseUI.SetActive(true);
+
+        StartCoroutine(TransitionToLobby(MLoseUI));
+    }
+
+    private void ShowDrawUI()
+    {
+        MDrawUI.SetActive(true);
+
+        StartCoroutine(TransitionToLobby(MDrawUI));
+    }
+
+    private IEnumerator TransitionToLobby(GameObject activeUI)
+    {
+        yield return new WaitForSeconds(5F);
+
+        activeUI.SetActive(false);
+     
+        SceneManager.LoadScene("Demo Scene V1(Blue)");
     }
 
     //네트워크 불안정으로 인해 연결이 끊어진 경우, 재접속과 방에 재입장할 수 있도록 처리

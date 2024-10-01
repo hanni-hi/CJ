@@ -318,8 +318,6 @@ public class UIManager : MonoBehaviour
 
     public void Onsecondgameselected()
     {
-        //  HandleMapSelected("",secondgameButton);  두번째 게임 신이 완성되면 이름 넣기
-        //  HandleMapSelected("",secondgameButton);  두번째 게임 신이 완성되면 이름 넣기
         selectedSceneName = "Example_01";
     }
     public void Onmultigameselected()

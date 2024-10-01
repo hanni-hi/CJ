@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
 
@@ -47,11 +48,13 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (PhotonManager.instance.M_PauseUI.activeInHierarchy)
+        if (SceneManager.GetActiveScene().name== "SciFi_Warehouse_M")
         {
-            return;  // ESC 입력 차단
+            if (PhotonManager.instance.M_PauseUI.activeInHierarchy)
+            {
+                return;  // ESC 입력 차단
+            }
         }
-
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
