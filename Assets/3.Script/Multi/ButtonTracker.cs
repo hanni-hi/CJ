@@ -76,13 +76,13 @@ public class ButtonTracker : MonoBehaviour
             }
     }
 
-    public void SetPlayerColor(Color PColor1, Color PColor2)
-    {
-        BOwnColor1 = PColor1;
-        BOwnColor2 = PColor2;
-
-       // buttonOwnerColor = color;
-    }
+   // public void SetPlayerColor(Color PColor1, Color PColor2)
+   // {
+   //     BOwnColor1 = PColor1;
+   //     BOwnColor2 = PColor2;
+   //
+   //    // buttonOwnerColor = color;
+   // }
 
     public bool IsButtonPressedByPlayer()
     {
@@ -148,4 +148,16 @@ public class ButtonTracker : MonoBehaviour
             UpdateButtonState(false,PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
+
+  //  public void PressButtonWithActorNum(int actorNum)
+  //  {
+  //      isTracked = true;
+  //      UpdateButtonState(true,actorNum);
+  //  }
+  //
+  //  public void ReleaseButtonWithActorNum(int actorNum)
+  //  {
+  //      isTracked = false;
+  //      UpdateButtonState(false,actorNum);
+  //  }
 }

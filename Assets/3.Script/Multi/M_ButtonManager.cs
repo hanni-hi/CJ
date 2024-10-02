@@ -24,7 +24,7 @@ foreach(var button in buttons)
             ButtonTracker tracker = button.GetComponent<ButtonTracker>();
             if(tracker !=null&&!tracker.IsButtonPressedByPlayer())
             {
-                tracker.SetPlayerColor(player1Color, player2Color);
+                //tracker.SetPlayerColor(player1Color, player2Color);
                 playerButtonCount++;
             }
         }

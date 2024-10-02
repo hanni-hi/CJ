@@ -15,11 +15,11 @@ public class DuckInteraction : MonoBehaviour
         ptview = GetComponent<PhotonView>();
         ptManager=FindObjectOfType<PhotonManager>();
     }
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        if(other.CompareTag("Player"))
+        if(other.gameObject.CompareTag("Player"))
         {
-            PhotonView playerView = other.GetComponent<PhotonView>();
+            PhotonView playerView = other.gameObject.GetComponent<PhotonView>();
             if(playerView !=null)
             {
                 lastPlayerActorNum = playerView.Owner.ActorNumber;
@@ -38,6 +38,7 @@ public class DuckInteraction : MonoBehaviour
             Debug.Log($"오리 색상 변경 시도: {playerColor}");
 
             ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,playerColor);
+            
         }
         else
         {

@@ -42,6 +42,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private int requiredPlayer = 2;
     private bool gameStarted = false;
+    private bool isCilentReady = false;
+
    // public bool shouldAutoJoinRoom = true;
     private int jointRoomAttempts = 0;
     private const int maxJoinRoomAttempts = 3;
@@ -54,6 +56,13 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public Dictionary<int, int> playerPrefabIndexes = new Dictionary<int, int>();
     public Dictionary<int, int> playerButtonCount = new Dictionary<int, int>();
+
+    [PunRPC]
+    public void RPC_ClientReady()
+    {
+        isCilentReady = true;
+    }
+
 
     [PunRPC]
     public void RPC_PauseGame()
@@ -129,7 +138,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         if (isPressed)
         {
-            Debug.Log("스프라이트 변경합니다! ");
+            Debug.Log($"스프라이트 변경합니다! {actorNum} : {playercolor}");
             canvasImages[buttonIndex].color = playercolor;
         }
         else
@@ -386,7 +395,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
             //선택된 프리팹과 스폰 포인트 정보를 모든 클라이언트에게 전송
             photonView.RPC("RPC_selectPrefab", RpcTarget.All, prefabIdx, spawnPointIdx, PhotonNetwork.LocalPlayer.ActorNumber);
-            yield return new WaitForSeconds(1f);
+            yield return StartCoroutine(WaitForClient());
         }
         else
         {
@@ -406,26 +415,57 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
             // 선택된 프리팹과 스폰 포인트를 모든 클라이언트에게 전송
             photonView.RPC("RPC_selectPrefab", RpcTarget.All, prefabIdx, spawnPointIdx, PhotonNetwork.LocalPlayer.ActorNumber);
+
+            ClientReady();
         }
 
         selectedPrefab = availablePrefabs[prefabIdx];
         //캐릭터 생성
         PhotonNetwork.Instantiate(selectedPrefab.name, points[spawnPointIdx].position, points[spawnPointIdx].rotation, 0);
 
-        foreach (var button in GameObject.FindGameObjectsWithTag("Button"))
-        {
-            ButtonTracker tracker = button.GetComponent<ButtonTracker>();
-            if (tracker != null)
-            {
-                Color p1color = GetColorByPrefabIndex(1);
-                Color p2color = GetColorByPrefabIndex(2);
-
-                tracker.SetPlayerColor(p1color, p2color);
-            }
-        }
+      //  foreach (var button in GameObject.FindGameObjectsWithTag("Button"))
+      //  {
+      //      ButtonTracker tracker = button.GetComponent<ButtonTracker>();
+      //      if (tracker != null)
+      //      {
+      //          Color p1color = GetColorByPrefabIndex(1);
+      //          Color p2color = GetColorByPrefabIndex(2);
+      //
+      //          tracker.SetPlayerColor(p1color, p2color);
+      //      }
+      //  }
         //타이머
         gameTimer.StartTimer();
     }
+
+    private IEnumerator WaitForClient()
+    {
+        isCilentReady = false;
+        float waitTime = 5f;
+        float elapsedTime = 0f;
+
+        while(!isCilentReady&&elapsedTime<waitTime)
+        {
+            yield return null;
+            elapsedTime += Time.deltaTime;
+        }
+
+        if(isCilentReady)
+        {
+            Debug.Log("클라이언트 준비 완료!");
+        }
+        else
+        {
+            Debug.LogWarning("아직 클라이언트가 준비가 안됐네요.");
+        }
+    }
+
+    public void ClientReady()
+    {
+        photonView.RPC("RPC_ClientReady",RpcTarget.MasterClient);
+    }
+
+
 
     public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
@@ -521,6 +561,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private void ShowVictoryUI(int playerNum)
     {
+        Debug.Log("Victory UI 활성화");
         MVictoryUI.SetActive(true);
 
         StartCoroutine(TransitionToLobby(MVictoryUI));

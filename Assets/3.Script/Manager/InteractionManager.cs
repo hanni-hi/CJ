@@ -63,7 +63,11 @@ public class InteractionManager : MonoBehaviour
 
             if (hit.collider.CompareTag("Finish"))
             {
-                GaugeUI.SetActive(true);
+                if (GaugeUI != null)
+                {
+                    GaugeUI.SetActive(true);
+
+                }
             }
 
         }
@@ -76,9 +80,11 @@ public class InteractionManager : MonoBehaviour
 
             interactionUI.SetActive(false);
             passwordUI.SetActive(false); // PasswordUI도 비활성화
-            GaugeUI.SetActive(false);
             currentInteractable = null;
-
+            if (GaugeUI != null)
+            {
+                GaugeUI.SetActive(false);
+            }
         }
         
         

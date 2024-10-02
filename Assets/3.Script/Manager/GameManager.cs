@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public int maxHealth = 3;  //최대 체력
     public int currentHealth;  //현재 체력
     public GameObject gameOverUI;  //게임 오버 UI
-    private bool isPaused = false;
+    public bool isPaused = false;
 
     // 포스트 프로세싱 관련 변수
     public PostProcessVolume postProcessVolume;  // 씬에 적용할 PostProcessVolume
@@ -29,8 +29,9 @@ public class GameManager : MonoBehaviourPunCallbacks
 
            // DontDestroyOnLoad(gameOverUI);
         }
-        else
+        else if(instance !=this)
         {
+            Debug.Log("게임매니저 안녕...");
             Destroy(gameObject);
             return;
         }
@@ -41,9 +42,16 @@ public class GameManager : MonoBehaviourPunCallbacks
         currentHealth = maxHealth; // 게임 시작시에는 최대 체력
         UIManager.instance.UpdateHealthUI(currentHealth, maxHealth);
 
-        postProcessVolume.profile.TryGetSettings(out bloom);
+        if (postProcessVolume != null)
+        {
+            postProcessVolume.profile.TryGetSettings(out bloom);
         postProcessVolume.profile.TryGetSettings(out colorGrading);
         postProcessVolume.profile.TryGetSettings(out vignette);
+        }
+        else
+        {
+            Debug.LogError("postProcessVolume이 설정되지 않았습니다.");
+        }
     }
 
     private void Update()
@@ -67,6 +75,32 @@ public class GameManager : MonoBehaviourPunCallbacks
                 PauseGame();
             }
         }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        postProcessVolume = FindObjectOfType<PostProcessVolume>();
+
+        if(postProcessVolume !=null)
+        {
+            postProcessVolume.profile.TryGetSettings(out bloom);
+            postProcessVolume.profile.TryGetSettings(out colorGrading);
+            postProcessVolume.profile.TryGetSettings(out vignette);
+        }
+        else
+        {
+            Debug.LogError("OnSceneLoaded :씬에 PostProcessVolume이 존재하지 않습니다.");
+        }
+
+    }
+        protected new void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+    protected new void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     public void TakeDamage(int damage)
@@ -99,25 +133,30 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void PauseGame()
     {
-        Time.timeScale = 0f;
-        UIManager.instance.ShowPauseMenu();
+       // Time.timeScale = 0f;
         ApplyPausePostProcessing();
         isPaused = true;
 
-        // Notify other players
-        PhotonManager.instance.photonView.RPC("RPC_PauseGame", RpcTarget.Others);
+        if (SceneManager.GetActiveScene().name == "SciFi_Warehouse_M")
+        {
+            // Notify other players
+            PhotonManager.instance.photonView.RPC("RPC_PauseGame", RpcTarget.Others);
+        }
+        UIManager.instance.ShowPauseMenu();
     }
 
     public void ResumeGame()
     {
-        Time.timeScale = 1f;
-        UIManager.instance.HidePauseMenu();
+       // Time.timeScale = 1f;
         ResetPostProcessing();
-        isPaused = false;
 
-        // Notify other players
-        PhotonManager.instance.photonView.RPC("RPC_ResumeGame", RpcTarget.Others);
-    }
+        if (SceneManager.GetActiveScene().name== "SciFi_Warehouse_M")
+        {
+            // Notify other players
+            PhotonManager.instance.photonView.RPC("RPC_ResumeGame", RpcTarget.Others);
+        }
+        UIManager.instance.HidePauseMenu();
+        }
 
     private void ApplyGameOverPostProcessing()
     {
@@ -142,6 +181,12 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void ApplyLobbyPostProcessing()
     {
+        if (postProcessVolume == null)
+        {
+            Debug.LogError("postProcessVolume이 null입니다. PostProcessVolume이 씬에 추가되었는지 확인하세요.");
+            return;
+        }
+
         bloom.intensity.value = 6.0f;
         bloom.threshold.value = 1.1f;
         colorGrading.temperature.value = 20f;

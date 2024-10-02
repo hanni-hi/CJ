@@ -202,9 +202,13 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log("HidePauseMenu()");
         pauseUIPanel.SetActive(false);
-        photonmanager.M_PauseUI.SetActive(false);
-        Time.timeScale = 1f;
-      //  isPaused = false;
+
+        if (SceneManager.GetActiveScene().name == "SciFi_Warehouse_M")
+        {
+            photonmanager.M_PauseUI.SetActive(false);
+        }
+            Time.timeScale = 1f;
+        GameManager.instance.isPaused = false;
     }
 
     public void ShowPauseMenu()

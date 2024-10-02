@@ -50,12 +50,17 @@ public class Timer : MonoBehaviour
     void EndGame()
     {
         isGameRunning = false;
-        Time.timeScale = 0;
+        // Time.timeScale = 0;
         resultUIPanel.SetActive(true) ;
 
         if(PhotonManager.instance !=null)
         {
             PhotonManager.instance.EndMGame();
+        }
+
+        else
+        {
+            Debug.LogError("PhotonManager°¡ ¾ø³×¿è!");
         }
     }
 }

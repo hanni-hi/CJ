@@ -8,7 +8,6 @@ using Photon.Realtime;
 
 public class Button_Script : MonoBehaviour
 {
-
     //  public Action  onButtonPressed;
     //  public Action onButtonReleased;
 
