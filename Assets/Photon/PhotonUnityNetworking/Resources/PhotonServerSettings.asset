@@ -48,6 +48,7 @@ MonoBehaviour:
   - RPC_PauseGame
   - RPC_ResumeGame
   - RPC_ClientReady
+  - RPC_Endgame
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

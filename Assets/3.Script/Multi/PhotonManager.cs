@@ -20,7 +20,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public Sprite originalSprite;
 
     // 플레이어 컬러 배열
-    private Color[] playerColors = { Color.yellow, Color.blue, Color.red, Color.black, new Color(0.5f, 0, 0.5f) };
+    private Color[] playerColors = { new Color(1f, 1f, 0.7f), new Color(0.2f, 0.4f, 0.6f), Color.red, Color.black, new Color(0.6f, 0.1f, 0.4f) };
 
     //버전 입력
     private readonly string version = "1.0f";
@@ -140,6 +140,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             Debug.Log($"스프라이트 변경합니다! {actorNum} : {playercolor}");
             canvasImages[buttonIndex].color = playercolor;
+
+            ShowButtonCount();
         }
         else
         {
@@ -175,11 +177,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         switch (prefabIndex)
         {
-            case 0: return Color.yellow;
-            case 1: return Color.blue;
+            case 0: return new Color(1f, 1f, 0.7f);
+            case 1: return new Color(0.2f, 0.4f, 0.6f);
             case 2: return Color.red;
             case 3: return Color.black;
-            case 4: return new Color(0.5f, 0, 0.5f); //보라색
+            case 4: return new Color(0.6f, 0.1f, 0.4f); //보라색
             default: return Color.white;
         }
     }
@@ -213,8 +215,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             Destroy(gameObject);
             return;
         }
-    
-    
     }
 
     void Start()
@@ -423,17 +423,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         //캐릭터 생성
         PhotonNetwork.Instantiate(selectedPrefab.name, points[spawnPointIdx].position, points[spawnPointIdx].rotation, 0);
 
-      //  foreach (var button in GameObject.FindGameObjectsWithTag("Button"))
-      //  {
-      //      ButtonTracker tracker = button.GetComponent<ButtonTracker>();
-      //      if (tracker != null)
-      //      {
-      //          Color p1color = GetColorByPrefabIndex(1);
-      //          Color p2color = GetColorByPrefabIndex(2);
-      //
-      //          tracker.SetPlayerColor(p1color, p2color);
-      //      }
-      //  }
         //타이머
         gameTimer.StartTimer();
     }
@@ -524,11 +513,21 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public void IncrementButtonCount(int actorNum)
     {
-        if (playerButtonCount.ContainsKey(actorNum))
-            playerButtonCount[actorNum]++;
-        else
-            playerButtonCount[actorNum] = 1;
+if(!playerButtonCount.ContainsKey(actorNum))
+        {
+            playerButtonCount[actorNum] = 0;
+        }
+        playerButtonCount[actorNum]++;
     }
+
+    public void DecrementButtonCount(int actorNum)
+    {
+        if(playerButtonCount.ContainsKey(actorNum)&&playerButtonCount[actorNum]>0)
+        {
+            playerButtonCount[actorNum]--;
+        }
+    }
+
 
     public void ShowButtonCount()
     {
@@ -540,22 +539,86 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public void EndMGame()
     {
-        int player1count = playerButtonCount.ContainsKey(1) ? playerButtonCount[1] : 0;
-        int player2count = playerButtonCount.ContainsKey(2) ? playerButtonCount[2] : 0;
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("마스터에게 EndMGame 호출됨");
 
-        if(player1count>player2count)
-        {
-            ShowVictoryUI(1);
-            ShowLoseUI(2);
+            int player1count = 0;
+            int player2count = 0;
+
+            ShowButtonCount();
+
+            if(playerButtonCount.ContainsKey(1))
+            {
+                player1count = playerButtonCount[1];
+            }
+            if(playerButtonCount.ContainsKey(2))
+            {
+                player2count = playerButtonCount[2];
+            }
+
+            Debug.Log($"actor 1 : {player1count}  // actor 2 : {player2count} ");
+
+            int winningPlayer = 0;
+
+            if(player1count>player2count)
+            {
+                winningPlayer = 1;
+            }
+            else if(player2count>player1count)
+            {
+                winningPlayer = 2;
+            }
+
+            photonView.RPC("RPC_Endgame", RpcTarget.All, winningPlayer);
+
+            // foreach (var image in canvasImages)
+            // {
+            //     if (image.color == GetColorByPrefabIndex(1))
+            //     {
+            //         player1count++;
+            //     }
+            //     else if (image.color == GetColorByPrefabIndex(2))
+            //     {
+            //         player2count++;
+            //     }
+            // }
+            //
+            // int winningPlayer = 0;
+            //
+            // Debug.Log($"actor 1 : {player1count}  // actor 2 : {player2count} ");
+            //
+            // if (player1count > player2count)
+            // {
+            //     winningPlayer = 1;
+            // }
+            // else if (player1count < player2count)
+            // {
+            //     winningPlayer = 2;
+            // }
+            //
+            // photonView.RPC("RPC_Endgame",RpcTarget.All,winningPlayer);
         }
-        else if(player1count<player2count)
+    }
+
+    [PunRPC]
+    public void RPC_Endgame(int winningPlayer)
+    {
+        Debug.Log($"Received winningPlayer: {winningPlayer}");
+
+        int localPlayerActorNum = PhotonNetwork.LocalPlayer.ActorNumber;
+
+        if (winningPlayer==localPlayerActorNum)
         {
-            ShowVictoryUI(2);
-            ShowLoseUI(1);
+            ShowVictoryUI(localPlayerActorNum);
+        }
+        else if(winningPlayer==0)
+        {
+            ShowDrawUI();
         }
         else
         {
-            ShowDrawUI();
+            ShowLoseUI(localPlayerActorNum);
         }
     }
 
@@ -583,7 +646,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private IEnumerator TransitionToLobby(GameObject activeUI)
     {
-        yield return new WaitForSeconds(5F);
+        yield return new WaitForSeconds(10F);
 
         activeUI.SetActive(false);
      

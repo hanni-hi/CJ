@@ -96,7 +96,7 @@ public class ButtonTracker : MonoBehaviour
 
              Debug.Log($"버튼 상태 업데이트 시도: Index {buttonIndex}, Pressed: {isPressed}, ActorNum: {actorNum}, Color: {pcolor}");
 
-            PTmanager.photonView.RPC("RPC_UpdateCanvasImage", RpcTarget.All, buttonIndex, isPressed, actorNum,pcolor);
+            PTmanager.photonView.RPC("RPC_UpdateCanvasImage", RpcTarget.AllBuffered, buttonIndex, isPressed, actorNum,pcolor);
         }
         else
         {
@@ -116,8 +116,9 @@ public class ButtonTracker : MonoBehaviour
             {
                 dinteraction.HandleDuckOnButton();
                 // OnButtonPushed(other);
-
-                UpdateButtonState(true,PhotonNetwork.LocalPlayer.ActorNumber);
+                // 여기서 DuckInteraction의 lastPlayerActorNum 사용
+                int actorNum = dinteraction.GetLastPlayerActorNum();
+                UpdateButtonState(true, actorNum);
             }
         }
     }
@@ -133,11 +134,12 @@ public class ButtonTracker : MonoBehaviour
             if (dinteraction != null)
             {
                 dinteraction.ResetDuckColor();
-               // OnButtonReleased(null);
+                // OnButtonReleased(null);
+                int actorNum = dinteraction.GetLastPlayerActorNum();
+                UpdateButtonState(false,actorNum);
             }
             // linkedUISprite.color = Color.white;
 
-            UpdateButtonState(false,PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 }

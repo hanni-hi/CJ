@@ -30,6 +30,7 @@ public class DuckInteraction : MonoBehaviour
 
     public void HandleDuckOnButton()
     {
+        Debug.Log($"HandleDuckOnButton 호출됨 - lastPlayerActorNum: {lastPlayerActorNum}");
         if (lastPlayerActorNum != -1 && ptManager.playerPrefabIndexes.ContainsKey(lastPlayerActorNum))
         {
             int playerPrefabIndex = ptManager.playerPrefabIndexes[lastPlayerActorNum];
@@ -38,6 +39,14 @@ public class DuckInteraction : MonoBehaviour
             Debug.Log($"오리 색상 변경 시도: {playerColor}");
 
             ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,playerColor);
+
+            if(!ptview.IsMine)
+            {
+                ptview.TransferOwnership(PhotonNetwork.LocalPlayer);
+                Debug.Log($"이 오리는 이제 {PhotonNetwork.LocalPlayer.ActorNumber} 거임. ㅅㄱ");
+            }
+
+            ptManager.IncrementButtonCount(lastPlayerActorNum);
             
         }
         else
@@ -49,6 +58,7 @@ public class DuckInteraction : MonoBehaviour
     public void ResetDuckColor()
     {
         ptview.RPC("RPC_ChangeDuckColor",RpcTarget.All,Color.yellow);
+        ptManager.DecrementButtonCount(lastPlayerActorNum);
     }
 
 
@@ -61,5 +71,10 @@ public class DuckInteraction : MonoBehaviour
         {
             renderer.material.color = newColor;
         }
+    }
+
+    public int GetLastPlayerActorNum()
+    {
+        return lastPlayerActorNum;
     }
 }

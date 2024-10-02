@@ -51,7 +51,7 @@ public class Timer : MonoBehaviour
     {
         isGameRunning = false;
         // Time.timeScale = 0;
-        resultUIPanel.SetActive(true) ;
+        // resultUIPanel.SetActive(true) ;
 
         if(PhotonManager.instance !=null)
         {
