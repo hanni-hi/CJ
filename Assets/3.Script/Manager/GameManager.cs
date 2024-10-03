@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         currentHealth = maxHealth; // 게임 시작시에는 최대 체력
         UIManager.instance.UpdateHealthUI(currentHealth, maxHealth);
+        photonView.ViewID = PhotonNetwork.AllocateViewID(true);
 
         if (postProcessVolume != null)
         {
@@ -51,12 +52,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         else
         {
             Debug.LogError("postProcessVolume이 설정되지 않았습니다.");
-        }
-
-
-        if(PhotonNetwork.InRoom)
-        {
-            photonView.ViewID = PhotonNetwork.AllocateViewID(true);
         }
     }
 
@@ -102,7 +97,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         protected new void OnEnable()
         {
             SceneManager.sceneLoaded += OnSceneLoaded;
-        }
+    }
 
     protected new void OnDisable()
     {

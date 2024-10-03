@@ -385,6 +385,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.IsMasterClient)
         {
+            int masterActorNum = 1;
             Debug.Log("나는 마스터 클라이언트! ");
             prefabIdx = Random.Range(0, availablePrefabs.Count);
             spawnPointIdx = Random.Range(1, points.Length);
@@ -399,6 +400,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         }
         else
         {
+            int clientActorNum = 2;
             do
             {
                 yield return new WaitForSeconds(1f);
