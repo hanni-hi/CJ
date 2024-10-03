@@ -52,9 +52,16 @@ public class SettingManager : MonoBehaviour
 
     public void SetVolume(float sliderValue)
     {
-        float volume = Mathf.Log10(sliderValue) * 20;
-        audioMixer.SetFloat("Master",volume);
-    }
+        if (sliderValue <= 0.001f)
+        {
+            audioMixer.SetFloat("Master", -80f);
+        }
+        else
+        {
+            float volume = Mathf.Log10(sliderValue) * 20;
+            audioMixer.SetFloat("Master", volume);
+        }
+        }
 
     private void InitializeResolutionSettings()
     {

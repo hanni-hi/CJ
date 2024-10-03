@@ -51,6 +51,9 @@ public class UIManager : MonoBehaviour
     private GameObject selectedButton; //현재 선택된 맵 버튼을 저장함
     private Sprite originalSprite; //원래 스프라이트
 
+    public AudioClip clickSound;
+    private AudioSource audioSource;
+
     private string githubUrl = "https://github.com/hanni-hi";
 
     private void Awake()
@@ -83,6 +86,20 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         photonmanager = FindObjectOfType<PhotonManager>();
+        audioSource = GetComponent<AudioSource>();
+    }
+
+    void Update()
+    {
+    if(Input.GetMouseButtonDown(0))
+        {
+            PlayClickSound();
+        }
+    }
+
+    public void PlayClickSound()
+    {
+        audioSource.PlayOneShot(clickSound);
     }
 
     private void OnEnable()
@@ -123,8 +140,15 @@ public class UIManager : MonoBehaviour
             //  // 로비 씬으로 돌아왔을 때 필요한 초기화 작업 수행
             //  InitializeLobbyUI();
             //  LoadReferencesFromJSON();
-            GameManager.instance.ApplyLobbyPostProcessing();
-            RemoveDuplicateObjects();
+            if (GameManager.instance == null)
+            {
+                Debug.LogError("GameManager가 로드되지 않았습니다.");
+            }
+            else
+            {
+                GameManager.instance.ApplyLobbyPostProcessing();
+            }
+          //  RemoveDuplicateObjects();
         }
         if(scene.name== "SciFi_Warehouse" || scene.name== "Example_01")
         {
@@ -215,7 +239,7 @@ public class UIManager : MonoBehaviour
     {
         pauseUIPanel.SetActive(true);
         Time.timeScale = 0; //게임 시간 정지
-      //  isPaused = true;
+        GameManager.instance.isPaused = true;
     }
 
     public void RestartGame()
@@ -223,8 +247,8 @@ public class UIManager : MonoBehaviour
         Time.timeScale = 1f;
         pauseUIPanel.SetActive(false);
         victoryUIPanel.SetActive(false);
-
-        if(SceneManager.GetActiveScene().name== "Example_01")
+        GameManager.instance.isPaused = false;
+        if (SceneManager.GetActiveScene().name== "Example_01")
         {
             if(MemoUIManager.instance !=null)
             {
@@ -237,8 +261,8 @@ public class UIManager : MonoBehaviour
     public void LoadLobby()
     {
        Time.timeScale = 1f;
-
-        if(SceneManager.GetActiveScene().name== "SciFi_Warehouse_M")
+        GameManager.instance.isPaused = false;
+        if (SceneManager.GetActiveScene().name== "SciFi_Warehouse_M")
         {
             if (PhotonNetwork.InRoom)
             {
