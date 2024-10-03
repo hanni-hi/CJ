@@ -52,6 +52,7 @@ public class UIManager : MonoBehaviour
     private Sprite originalSprite; //원래 스프라이트
 
     public AudioClip clickSound;
+    public AudioClip victorySound;
     private AudioSource audioSource;
 
     private string githubUrl = "https://github.com/hanni-hi";
@@ -370,7 +371,6 @@ public class UIManager : MonoBehaviour
 
     public void ShowVictoryUI()
     {
-
             if (gameTimer != null)
         {
             string gameName = "";
