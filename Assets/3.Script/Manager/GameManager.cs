@@ -52,6 +52,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Debug.LogError("postProcessVolume이 설정되지 않았습니다.");
         }
+
+
+        if(PhotonNetwork.InRoom)
+        {
+            photonView.ViewID = PhotonNetwork.AllocateViewID(true);
+        }
     }
 
     private void Update()

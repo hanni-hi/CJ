@@ -9,6 +9,9 @@ public class Player : MonoBehaviour
 	[Header("인벤토리")]
 	public Inventory inventory;
 
+	public AudioSource audioSource;
+	public AudioClip pickupSound;
+
 	private Animator anim;
 	private CharacterController controller;
 
@@ -43,6 +46,7 @@ public class Player : MonoBehaviour
 		anim = gameObject.GetComponentInChildren<Animator>();
 		playerRenderer = GetComponentInChildren<Renderer>(); // 캐릭터의 자식 Renderer 컴포넌트 가져오기
 		originalColor = playerRenderer.material.color; // 원래 색상 저장
+		audioSource = GetComponent<AudioSource>();
 
         // UI 이미지 색상 설정
 		if (skillImage != null)
@@ -228,6 +232,11 @@ if(UIManager.instance.HasEmptyHeart())
             {
 				inventory.AddItem(objItem.item);
 				Destroy(other.gameObject);
+
+				if(pickupSound !=null&& audioSource !=null)
+                {
+					audioSource.PlayOneShot(pickupSound);
+                }
             }
         }
     }
