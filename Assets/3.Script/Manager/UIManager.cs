@@ -391,6 +391,12 @@ public class UIManager : MonoBehaviour
             UpdateStartToggles(gameTimer.GetElapsedTime());
         }
 
+            if(victorySound !=null&&audioSource !=null)
+        {
+            audioSource.PlayOneShot(victorySound);
+
+        }
+
         victoryUIPanel.SetActive(true);
         Time.timeScale = 0;
     }
