@@ -35,6 +35,7 @@ public class UIManager : MonoBehaviour
     public GameObject victoryUIPanel;
     public GameObject loginUIPanel;
     public GameObject lodingErrorUIPanel;
+    public GameObject CreditUIPanel;
 
     public TextMeshProUGUI gameOverTimeText;
     public TextMeshProUGUI victoryTimeText;
@@ -55,7 +56,7 @@ public class UIManager : MonoBehaviour
     public AudioClip victorySound;
     private AudioSource audioSource;
 
-    private string githubUrl = "https://github.com/hanni-hi";
+    private string githubUrl = "https://github.com/hanni-hi/CJ";
 
     private void Awake()
     {
@@ -303,6 +304,11 @@ public class UIManager : MonoBehaviour
         Application.Quit();
     }
 
+    public void OnCreditClicked()
+    {
+        CreditUIPanel.SetActive(true);
+    }
+
     public void OnCancelButtonClicked()
     {
         quitUIPanel.SetActive(false);
@@ -314,6 +320,12 @@ public class UIManager : MonoBehaviour
         loginUIPanel.SetActive(false);
         warningMapselectUIPanel.SetActive(false);
         aboutusUIPanel.SetActive(false);
+
+    }
+
+    public void OnCancelCredit()
+    {
+        CreditUIPanel.SetActive(false);
 
     }
 

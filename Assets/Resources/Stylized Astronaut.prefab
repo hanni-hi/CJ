@@ -1511,6 +1511,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventory: {fileID: 0}
+  audioSource: {fileID: 0}
+  pickupSound: {fileID: 0}
   speed: 7
   turnSpeed: 150
   gravity: 20

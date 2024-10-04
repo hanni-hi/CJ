@@ -20,7 +20,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public Sprite originalSprite;
 
     // 플레이어 컬러 배열
-    private Color[] playerColors = { new Color(1f, 1f, 0.7f), new Color(0.2f, 0.4f, 0.6f), Color.red, Color.black, new Color(0.6f, 0.1f, 0.4f) };
+    private Color[] playerColors = { new Color(1f, 1f, 0.7f), Color.green, Color.red, Color.black, Color.magenta };
 
     //버전 입력
     private readonly string version = "1.0f";
@@ -178,10 +178,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         switch (prefabIndex)
         {
             case 0: return new Color(1f, 1f, 0.7f);
-            case 1: return new Color(0.2f, 0.4f, 0.6f);
+            case 1: return Color.green;
             case 2: return Color.red;
             case 3: return Color.black;
-            case 4: return new Color(0.6f, 0.1f, 0.4f); //보라색
+            case 4: return Color.magenta; //보라색
             default: return Color.white;
         }
     }
